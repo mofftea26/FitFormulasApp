@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import React, { useState } from "react";
+import { StyleSheet, TouchableOpacity } from "react-native";
 import BMRForm from "../../components/calculators/BMRForm";
 import TDEEForm from "../../components/calculators/TDEEForm";
 
@@ -12,7 +12,7 @@ type CalcType = (typeof CALCULATIONS)[number];
 export default function CalculatorsScreen() {
   const [selected, setSelected] = useState<CalcType | null>(null);
 
-  const backgroundColor = useThemeColor({}, 'background');
+  const backgroundColor = useThemeColor({}, "background");
   const renderForm = () => {
     switch (selected) {
       case "BMR":
@@ -24,7 +24,9 @@ export default function CalculatorsScreen() {
       default:
         return (
           <ThemedView>
-            <ThemedText style={styles.title}>🧠 Choose a calculation:</ThemedText>
+            <ThemedText style={styles.title}>
+              🧠 Choose a calculation:
+            </ThemedText>
             {CALCULATIONS.map((type) => (
               <TouchableOpacity
                 key={type}
@@ -39,7 +41,11 @@ export default function CalculatorsScreen() {
     }
   };
 
-  return <ThemedView style={[styles.container, { backgroundColor }]}>{renderForm()}</ThemedView>;
+  return (
+    <ThemedView style={[styles.container, { backgroundColor }]}>
+      {renderForm()}
+    </ThemedView>
+  );
 }
 
 const styles = StyleSheet.create({

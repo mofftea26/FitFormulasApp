@@ -1,11 +1,11 @@
-import { useAuth } from "@/contexts/AuthContext";
-import { useSaveCalculation } from "@/hooks/mutations/useSaveCalculation";
-import { Formik } from "formik";
-import React from "react";
-import { Alert, Button, StyleSheet, TextInput } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSaveCalculation } from "@/hooks/mutations/useSaveCalculation";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { Formik } from "formik";
+import React from "react";
+import { Alert, Button, StyleSheet, TextInput, View } from "react-native";
 import * as yup from "yup";
 
 const ACTIVITY_LEVELS = {
@@ -28,8 +28,8 @@ export default function TDEEForm() {
   const { session } = useAuth();
   const userId = session?.user.id || "";
   const saveCalculation = useSaveCalculation(userId);
-  const tintColor = useThemeColor({}, 'tint');
-  const iconColor = useThemeColor({}, 'icon');
+  const tintColor = useThemeColor({}, "tint");
+  const iconColor = useThemeColor({}, "icon");
 
   const handleSubmit = (values: any) => {
     const { weight, height, age, gender, activity } = values;

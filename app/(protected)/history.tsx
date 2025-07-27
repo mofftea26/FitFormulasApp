@@ -1,10 +1,10 @@
-import { useAuth } from "@/contexts/AuthContext";
-import { useUserCalculations } from "@/hooks/queries/useUserCalculations";
-import React from "react";
-import { FlatList, StyleSheet } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserCalculations } from "@/hooks/queries/useUserCalculations";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import React from "react";
+import { FlatList, StyleSheet } from "react-native";
 
 export default function HistoryScreen() {
   const { session } = useAuth();
@@ -14,23 +14,27 @@ export default function HistoryScreen() {
     isLoading,
     error,
   } = useUserCalculations(userId || "");
+  const backgroundColor = useThemeColor({}, "background");
+  const textColor = useThemeColor({}, "text");
 
   if (isLoading) return <ThemedText>Loading...</ThemedText>;
-  if (error) return <ThemedText>Error loading history: {error.message}</ThemedText>;
-  if (!calculations?.length) return <ThemedText>No calculations found.</ThemedText>;
+  if (error)
+    return <ThemedText>Error loading history: {error.message}</ThemedText>;
+  if (!calculations?.length)
+    return <ThemedText>No calculations found.</ThemedText>;
 
-  const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
   return (
-    <ThemedView style={[styles.container, { backgroundColor }] }>
+    <ThemedView style={[styles.container, { backgroundColor }]}>
       <ThemedText style={styles.title}>📄 History</ThemedText>
       <FlatList
         data={calculations}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <ThemedView style={[styles.item, { borderColor: textColor + '30' }] }>
+          <ThemedView style={[styles.item, { borderColor: textColor + "30" }]}>
             <ThemedText style={styles.type}>{item.type}</ThemedText>
-            <ThemedText>Date: {new Date(item.createdAt).toLocaleDateString()}</ThemedText>
+            <ThemedText>
+              Date: {new Date(item.createdAt).toLocaleDateString()}
+            </ThemedText>
             <ThemedText>Result: {JSON.stringify(item.resultJson)}</ThemedText>
           </ThemedView>
         )}

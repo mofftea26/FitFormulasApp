@@ -64,7 +64,7 @@ export default function HomeScreen() {
         </ThemedText>
       </ThemedView>
 
-      <ThemedView style={[styles.userInfo, { borderColor: textColor + '20' }]}>
+      <ThemedView style={[styles.userInfo, { borderColor: textColor + "20" }]}>
         <ThemedText type="subtitle">User Information</ThemedText>
         <ThemedText>Email: {session?.user?.email}</ThemedText>
         <ThemedText>User ID: {session?.user?.id}</ThemedText>
@@ -93,7 +93,11 @@ export default function HomeScreen() {
         onPress={handleSignOut}
         activeOpacity={0.8}
       >
-        <ThemedText style={[styles.signOutButtonText, { color: backgroundColor }]}>Sign Out</ThemedText>
+        <ThemedText
+          style={[styles.signOutButtonText, { color: backgroundColor }]}
+        >
+          Sign Out
+        </ThemedText>
       </TouchableOpacity>
     </ThemedView>
   );
@@ -103,6 +107,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    paddingTop: 0,
   },
   header: {
     alignItems: "center",
