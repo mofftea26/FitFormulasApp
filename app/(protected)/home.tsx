@@ -6,6 +6,22 @@ import { ThemedView } from "@/components/ThemedView";
 import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
+// const fetchData = async () => {
+//   const { data, error } = await supabase.from("users").select("*");
+//   console.log("data", data);
+// };
+
+// const calculateData = async (user_id: string) => {
+//   const { data, error } = await supabase.from("calculations").insert([
+//     {
+//       user_id: user_id,
+//       type: "BMR",
+//       result_json: { bmr: 2000 },
+//     },
+//   ]);
+//   console.log("data", data);
+// };
+
 export default function HomeScreen() {
   const { session, signOut } = useAuth();
   const tintColor = useThemeColor({}, "tint");
@@ -30,6 +46,12 @@ export default function HomeScreen() {
       },
     ]);
   };
+
+  // useEffect(() => {
+  //   fetchData();
+  //   calculateData(session?.user?.id || "");
+  //   fetchData();
+  // }, []);
 
   return (
     <ThemedView style={styles.container}>
