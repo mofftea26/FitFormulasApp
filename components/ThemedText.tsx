@@ -1,5 +1,4 @@
 import { StyleSheet, Text, type TextProps } from 'react-native';
-import { styled } from 'nativewind';
 
 import { useThemeColor } from '@/hooks/useThemeColor';
 
@@ -7,22 +6,19 @@ export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
   type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
-  className?: string;
 };
 
-function ThemedTextComponent({
+export function ThemedText({
   style,
   lightColor,
   darkColor,
   type = 'default',
-  className,
   ...rest
 }: ThemedTextProps) {
   const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
 
   return (
     <Text
-      className={className}
       style={[
         { color },
         type === 'default' ? styles.default : undefined,
@@ -36,8 +32,6 @@ function ThemedTextComponent({
     />
   );
 }
-
-export const ThemedText = styled(ThemedTextComponent);
 
 const styles = StyleSheet.create({
   default: {
