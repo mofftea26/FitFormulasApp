@@ -1,7 +1,10 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserProfile } from "@/hooks/queries/useUserProfile";
 import React from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet } from "react-native";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export default function ProfileScreen() {
   const { session } = useAuth();
@@ -9,22 +12,23 @@ export default function ProfileScreen() {
   const { data: profile, isLoading, error } = useUserProfile(userId || "");
 
   if (isLoading) return <ActivityIndicator />;
-  if (error) return <Text>Error loading profile: {error.message}</Text>;
-  if (!profile) return <Text>No profile found.</Text>;
+  if (error) return <ThemedText>Error loading profile: {error.message}</ThemedText>;
+  if (!profile) return <ThemedText>No profile found.</ThemedText>;
 
+  const backgroundColor = useThemeColor({}, 'background');
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>👤 Your Profile</Text>
-      <Text>Username: {profile.username}</Text>
-      <Text>Gender: {profile.gender || "N/A"}</Text>
-      <Text>Date of Birth: {profile.dateOfBirth || "N/A"}</Text>
-      <Text>Height: {profile.heightCm} cm</Text>
-      <Text>Weight: {profile.weightKg} kg</Text>
-    </View>
+    <ThemedView style={[styles.container, { backgroundColor }] }>
+      <ThemedText style={styles.header}>👤 Your Profile</ThemedText>
+      <ThemedText>Username: {profile.username}</ThemedText>
+      <ThemedText>Gender: {profile.gender || "N/A"}</ThemedText>
+      <ThemedText>Date of Birth: {profile.dateOfBirth || "N/A"}</ThemedText>
+      <ThemedText>Height: {profile.heightCm} cm</ThemedText>
+      <ThemedText>Weight: {profile.weightKg} kg</ThemedText>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#fff" },
+  container: { flex: 1, padding: 20 },
   header: { fontSize: 24, fontWeight: "bold", marginBottom: 20 },
 });

@@ -2,7 +2,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSaveCalculation } from "@/hooks/mutations/useSaveCalculation";
 import { Formik } from "formik";
 import React from "react";
-import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Button, StyleSheet, TextInput } from "react-native";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { useThemeColor } from "@/hooks/useThemeColor";
 import * as yup from "yup";
 
 const ACTIVITY_LEVELS = {
@@ -25,6 +28,8 @@ export default function TDEEForm() {
   const { session } = useAuth();
   const userId = session?.user.id || "";
   const saveCalculation = useSaveCalculation(userId);
+  const tintColor = useThemeColor({}, 'tint');
+  const iconColor = useThemeColor({}, 'icon');
 
   const handleSubmit = (values: any) => {
     const { weight, height, age, gender, activity } = values;
@@ -71,11 +76,11 @@ export default function TDEEForm() {
         touched,
         setFieldValue,
       }) => (
-        <View>
-          <Text style={styles.title}>🔥 TDEE Calculator</Text>
+        <ThemedView>
+          <ThemedText style={styles.title}>🔥 TDEE Calculator</ThemedText>
 
           <TextInput
-            style={styles.input}
+            style={[styles.input, { borderColor: iconColor }]}
             placeholder="Age"
             keyboardType="numeric"
             value={values.age}
@@ -83,11 +88,11 @@ export default function TDEEForm() {
             onBlur={handleBlur("age")}
           />
           {touched.age && errors.age && (
-            <Text style={styles.error}>{errors.age}</Text>
+            <ThemedText style={styles.error}>{errors.age}</ThemedText>
           )}
 
           <TextInput
-            style={styles.input}
+            style={[styles.input, { borderColor: iconColor }]}
             placeholder="Weight (kg)"
             keyboardType="numeric"
             value={values.weight}
@@ -95,11 +100,11 @@ export default function TDEEForm() {
             onBlur={handleBlur("weight")}
           />
           {touched.weight && errors.weight && (
-            <Text style={styles.error}>{errors.weight}</Text>
+            <ThemedText style={styles.error}>{errors.weight}</ThemedText>
           )}
 
           <TextInput
-            style={styles.input}
+            style={[styles.input, { borderColor: iconColor }]}
             placeholder="Height (cm)"
             keyboardType="numeric"
             value={values.height}
@@ -107,28 +112,28 @@ export default function TDEEForm() {
             onBlur={handleBlur("height")}
           />
           {touched.height && errors.height && (
-            <Text style={styles.error}>{errors.height}</Text>
+            <ThemedText style={styles.error}>{errors.height}</ThemedText>
           )}
 
-          <View style={styles.genderRow}>
+          <ThemedView style={styles.genderRow}>
             <Button
               title="Male"
               onPress={() => setFieldValue("gender", "male")}
-              color={values.gender === "male" ? "#0a7ea4" : "#aaa"}
+              color={values.gender === "male" ? tintColor : iconColor}
             />
             <Button
               title="Female"
               onPress={() => setFieldValue("gender", "female")}
-              color={values.gender === "female" ? "#0a7ea4" : "#aaa"}
+              color={values.gender === "female" ? tintColor : iconColor}
             />
-          </View>
+          </ThemedView>
 
-          <Text style={styles.subtitle}>Activity Level</Text>
+          <ThemedText style={styles.subtitle}>Activity Level</ThemedText>
           {Object.keys(ACTIVITY_LEVELS).map((level) => (
             <Button
               key={level}
               title={level.replace("_", " ")}
-              color={values.activity === level ? "#0a7ea4" : "#aaa"}
+              color={values.activity === level ? tintColor : iconColor}
               onPress={() => setFieldValue("activity", level)}
             />
           ))}
@@ -136,7 +141,7 @@ export default function TDEEForm() {
           <View style={{ marginTop: 16 }}>
             <Button title="Calculate TDEE" onPress={() => handleSubmit()} />
           </View>
-        </View>
+        </ThemedView>
       )}
     </Formik>
   );
@@ -147,7 +152,6 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 16, fontWeight: "500", marginTop: 16, marginBottom: 8 },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
     marginBottom: 10,
     padding: 8,
     borderRadius: 6,
