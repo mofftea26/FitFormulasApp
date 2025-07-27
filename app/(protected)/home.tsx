@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { Alert, StyleSheet, TouchableOpacity } from "react-native";
+import { Alert, TouchableOpacity } from "react-native";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -24,6 +24,7 @@ export default function HomeScreen() {
             await signOut();
             router.replace("/(auth)/signin");
           } catch (error) {
+            console.error(error);
             Alert.alert("Error", "Failed to sign out. Please try again.");
           }
         },
@@ -32,15 +33,15 @@ export default function HomeScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedView style={styles.header}>
+    <ThemedView className="flex-1 p-5">
+      <ThemedView className="items-center mt-15 mb-10">
         <ThemedText type="title">Welcome!</ThemedText>
-        <ThemedText style={styles.subtitle}>
+        <ThemedText className="text-center mt-2 opacity-70">
           You&apos;re successfully signed in to your fitness app
         </ThemedText>
       </ThemedView>
 
-      <ThemedView style={styles.userInfo}>
+      <ThemedView className="p-5 rounded-xl mb-8 gap-2 border" style={{ borderColor: "rgba(0,0,0,0.1)" }}>
         <ThemedText type="subtitle">User Information</ThemedText>
         <ThemedText>Email: {session?.user?.email}</ThemedText>
         <ThemedText>User ID: {session?.user?.id}</ThemedText>
@@ -49,14 +50,14 @@ export default function HomeScreen() {
         </ThemedText>
       </ThemedView>
 
-      <ThemedView style={styles.content}>
+      <ThemedView className="flex-1 gap-4">
         <ThemedText type="subtitle">Your Fitness Dashboard</ThemedText>
-        <ThemedText style={styles.description}>
+        <ThemedText className="leading-6 opacity-80">
           This is your protected home page. Here you can add your fitness
           tracking features, workout plans, progress monitoring, and more.
         </ThemedText>
 
-        <ThemedView style={styles.featureList}>
+        <ThemedView className="mt-4 gap-2">
           <ThemedText>• Track your workouts</ThemedText>
           <ThemedText>• Monitor your progress</ThemedText>
           <ThemedText>• Set fitness goals</ThemedText>
@@ -65,61 +66,14 @@ export default function HomeScreen() {
       </ThemedView>
 
       <TouchableOpacity
-        style={[styles.signOutButton, { backgroundColor: tintColor }]}
+        className="h-12 rounded-lg justify-center items-center mt-5"
+        style={{ backgroundColor: tintColor }}
         onPress={handleSignOut}
         activeOpacity={0.8}
       >
-        <ThemedText style={styles.signOutButtonText}>Sign Out</ThemedText>
+        <ThemedText className="text-white text-lg font-semibold">Sign Out</ThemedText>
       </TouchableOpacity>
     </ThemedView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  header: {
-    alignItems: "center",
-    marginTop: 60,
-    marginBottom: 40,
-  },
-  subtitle: {
-    textAlign: "center",
-    marginTop: 8,
-    opacity: 0.7,
-  },
-  userInfo: {
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 30,
-    gap: 8,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.1)",
-  },
-  content: {
-    flex: 1,
-    gap: 16,
-  },
-  description: {
-    lineHeight: 24,
-    opacity: 0.8,
-  },
-  featureList: {
-    marginTop: 16,
-    gap: 8,
-  },
-  signOutButton: {
-    height: 50,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 20,
-  },
-  signOutButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-  },
-});
