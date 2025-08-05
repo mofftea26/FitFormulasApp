@@ -6,4 +6,5 @@ export interface UserProfile {
   dateOfBirth?: string;
   heightCm: number;
   weightKg: number;
+  emailVerified: boolean;
 }

@@ -18,6 +18,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile> {
     dateOfBirth: data.date_of_birth,
     heightCm: data.height_cm,
     weightKg: data.weight_kg,
+    emailVerified: data.email_verified,
   };
 }
 
@@ -48,5 +49,33 @@ export async function createUserProfile(
     dateOfBirth: data.date_of_birth,
     heightCm: data.height_cm,
     weightKg: data.weight_kg,
+    emailVerified: data.email_verified,
+  };
+}
+
+export async function updateUserProfile(
+  userId: string,
+  updates: Partial<Omit<UserProfile, "id" | "createdAt">>
+): Promise<UserProfile> {
+  const { data, error } = await supabase
+    .from("users")
+    .update({
+      ...updates,
+    })
+    .eq("id", userId)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return {
+    id: data.id,
+    createdAt: data.created_at,
+    username: data.username,
+    gender: data.gender,
+    dateOfBirth: data.date_of_birth,
+    heightCm: data.height_cm,
+    weightKg: data.weight_kg,
+    emailVerified: data.email_verified,
   };
 }
