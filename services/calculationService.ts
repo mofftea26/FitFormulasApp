@@ -1,3 +1,4 @@
+
 import { supabase } from "../supabase";
 import { Calculation, CalculationType } from "../types/calculation";
 
@@ -51,4 +52,5 @@ export async function getUserCalculations(
     resultJson: row.result_json,
     inputJson: row.input_json,
   }));
+
 }
