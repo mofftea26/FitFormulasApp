@@ -169,7 +169,7 @@ export default function SignupScreen() {
               activeOpacity={0.8}
               disabled={isLoading}
             >
-              <ThemedText style={styles.buttonText}>
+              <ThemedText style={[styles.buttonText, { color: backgroundColor }]}>
                 {isLoading ? "Creating Account..." : "Sign Up"}
               </ThemedText>
             </TouchableOpacity>
@@ -230,7 +230,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   buttonText: {
-    color: "#fff",
     fontSize: 18,
     fontWeight: "600",
   },

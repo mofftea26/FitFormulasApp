@@ -25,6 +25,8 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 export default function HomeScreen() {
   const { session, signOut } = useAuth();
   const tintColor = useThemeColor({}, "tint");
+  const backgroundColor = useThemeColor({}, "background");
+  const textColor = useThemeColor({}, "text");
 
   const handleSignOut = async () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
@@ -62,7 +64,7 @@ export default function HomeScreen() {
         </ThemedText>
       </ThemedView>
 
-      <ThemedView style={styles.userInfo}>
+      <ThemedView style={[styles.userInfo, { borderColor: textColor + "20" }]}>
         <ThemedText type="subtitle">User Information</ThemedText>
         <ThemedText>Email: {session?.user?.email}</ThemedText>
         <ThemedText>User ID: {session?.user?.id}</ThemedText>
@@ -91,7 +93,11 @@ export default function HomeScreen() {
         onPress={handleSignOut}
         activeOpacity={0.8}
       >
-        <ThemedText style={styles.signOutButtonText}>Sign Out</ThemedText>
+        <ThemedText
+          style={[styles.signOutButtonText, { color: backgroundColor }]}
+        >
+          Sign Out
+        </ThemedText>
       </TouchableOpacity>
     </ThemedView>
   );
@@ -101,6 +107,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    paddingTop: 0,
   },
   header: {
     alignItems: "center",
@@ -118,7 +125,6 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     gap: 8,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.1)",
   },
   content: {
     flex: 1,
@@ -140,7 +146,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   signOutButtonText: {
-    color: "#fff",
     fontSize: 18,
     fontWeight: "600",
   },
