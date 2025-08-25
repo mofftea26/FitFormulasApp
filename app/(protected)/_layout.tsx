@@ -22,7 +22,6 @@ export default function ProtectedLayout() {
           name="home"
           options={{
             title: "Home",
-            headerShown: false,
             tabBarIcon: ({ color, size }) => (
               <TabIcon name="home" color={color} size={size} />
             ),

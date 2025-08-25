@@ -1,93 +1,146 @@
-import React from 'react';
-import { Alert, StyleSheet, View, TouchableOpacity } from 'react-native';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from "@hookform/resolvers/zod";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
 
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { TextField } from '@/components/inputs/TextField';
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { useTheme } from '@/theme';
-import { macrosSchema, MacrosForm } from '@/utils/form';
-import { useAuth } from '@/contexts/AuthContext';
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { PrimaryButton } from "@/components/buttons/PrimaryButton";
+import { TextField } from "@/components/inputs/TextField";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/theme";
+import { MacrosForm, macrosSchema } from "@/utils/form";
 
-const goals = ['fatLoss', 'maintenance', 'muscleGain'] as const;
-const activities = ['sedentary','light','moderate','active','very_active'] as const;
+const goals = ["fatLoss", "maintenance", "muscleGain"] as const;
+const activities = [
+  "sedentary",
+  "light",
+  "moderate",
+  "active",
+  "very_active",
+] as const;
 
-export default function MacrosForm() {
+export default function MacrosCalculator() {
   const { session } = useAuth();
-  const userId = session?.user.id || '';
+  const userId = session?.user.id || "";
   const { colors, spacing, typography } = useTheme();
 
   const { control, handleSubmit, watch, setValue } = useForm<MacrosForm>({
     resolver: zodResolver(macrosSchema),
-    defaultValues: { weight: '', goal: 'maintenance', tdee: '', bmr: '', activity: 'moderate' },
+    defaultValues: {
+      weight: "",
+      goal: "maintenance",
+      tdee: "",
+      bmr: "",
+      activity: "moderate",
+    },
   });
 
-  const goal = watch('goal');
-  const tdee = watch('tdee');
+  const goal = watch("goal");
+  const tdee = watch("tdee");
 
   const onSubmit = async (values: MacrosForm) => {
     try {
-      const res = await fetch('https://gxrxyjeacovzbmczydgw.supabase.co/functions/v1/macros', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          weightKg: parseFloat(values.weight),
-          goal: values.goal,
-          tdee: values.tdee ? parseFloat(values.tdee) : undefined,
-          bmr: values.bmr ? parseFloat(values.bmr) : undefined,
-          activityLevel: values.activity,
-        }),
-      });
+      const res = await fetch(
+        "https://gxrxyjeacovzbmczydgw.supabase.co/functions/v1/macros",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            weightKg: parseFloat(values.weight),
+            goal: values.goal,
+            tdee: values.tdee ? parseFloat(values.tdee) : undefined,
+            bmr: values.bmr ? parseFloat(values.bmr) : undefined,
+            activityLevel: values.activity,
+          }),
+        }
+      );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to calculate');
-      Alert.alert('Macros', `Calories: ${data.calories}\nProtein: ${data.protein}g\nCarbs: ${data.carbs}g\nFat: ${data.fat}g`);
+      if (!res.ok) throw new Error(data.error || "Failed to calculate");
+      Alert.alert(
+        "Macros",
+        `Calories: ${data.calories}\nProtein: ${data.protein}g\nCarbs: ${data.carbs}g\nFat: ${data.fat}g`
+      );
     } catch (err: any) {
-      Alert.alert('Error', err.message);
+      Alert.alert("Error", err.message);
     }
   };
 
   return (
     <ThemedView>
-      <ThemedText style={styles.title(typography, spacing)}>🍽️ Macros Calculator</ThemedText>
-      <TextField control={control} name="weight" label="Weight (kg)" keyboardType="numeric" />
+      <ThemedText style={styles.title(typography, spacing)}>
+        🍽️ Macros Calculator
+      </ThemedText>
+      <TextField
+        control={control}
+        name="weight"
+        label="Weight (kg)"
+        keyboardType="numeric"
+      />
       <View style={styles.row(spacing)}>
-        {goals.map(g => (
+        {goals.map((g) => (
           <TouchableOpacity
             key={g}
             style={styles.option(spacing, colors, goal === g)}
-            onPress={() => setValue('goal', g)}
+            onPress={() => setValue("goal", g)}
           >
-            <ThemedText style={styles.optionText(typography, colors, goal === g)}>{g}</ThemedText>
+            <ThemedText
+              style={styles.optionText(typography, colors, goal === g)}
+            >
+              {g}
+            </ThemedText>
           </TouchableOpacity>
         ))}
       </View>
-      <TextField control={control} name="tdee" label="TDEE (kcal)" keyboardType="numeric" />
+      <TextField
+        control={control}
+        name="tdee"
+        label="TDEE (kcal)"
+        keyboardType="numeric"
+      />
       {!tdee && (
         <>
-          <TextField control={control} name="bmr" label="BMR (kcal)" keyboardType="numeric" />
+          <TextField
+            control={control}
+            name="bmr"
+            label="BMR (kcal)"
+            keyboardType="numeric"
+          />
           <View style={styles.row(spacing)}>
-            {activities.map(a => (
+            {activities.map((a) => (
               <TouchableOpacity
                 key={a}
-                style={styles.option(spacing, colors, watch('activity') === a)}
-                onPress={() => setValue('activity', a)}
+                style={styles.option(spacing, colors, watch("activity") === a)}
+                onPress={() => setValue("activity", a)}
               >
-                <ThemedText style={styles.optionText(typography, colors, watch('activity') === a)}>{a}</ThemedText>
+                <ThemedText
+                  style={styles.optionText(
+                    typography,
+                    colors,
+                    watch("activity") === a
+                  )}
+                >
+                  {a}
+                </ThemedText>
               </TouchableOpacity>
             ))}
           </View>
         </>
       )}
-      <PrimaryButton label="Calculate Macros" onPress={handleSubmit(onSubmit)} />
+      <PrimaryButton
+        label="Calculate Macros"
+        onPress={handleSubmit(onSubmit)}
+      />
     </ThemedView>
   );
 }
 
 const styles = {
-  title: (typography: typeof import('@/theme').typography, spacing: typeof import('@/theme').spacing) =>
+  title: (
+    typography: typeof import("@/theme").typography,
+    spacing: typeof import("@/theme").spacing
+  ) =>
     StyleSheet.create({
       title: {
         fontFamily: typography.fontFamily.bold,
@@ -95,18 +148,18 @@ const styles = {
         marginBottom: spacing.md,
       },
     }).title,
-  row: (spacing: typeof import('@/theme').spacing) =>
+  row: (spacing: typeof import("@/theme").spacing) =>
     StyleSheet.create({
       row: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
+        flexDirection: "row",
+        justifyContent: "space-around",
         marginBottom: spacing.md,
       },
     }).row,
   option: (
-    spacing: typeof import('@/theme').spacing,
+    spacing: typeof import("@/theme").spacing,
     colors: any,
-    active: boolean,
+    active: boolean
   ) =>
     StyleSheet.create({
       btn: {
@@ -114,16 +167,16 @@ const styles = {
         marginHorizontal: spacing.xs,
         paddingVertical: spacing.sm,
         borderRadius: spacing.xs,
-        backgroundColor: active ? colors.tint : 'transparent',
+        backgroundColor: active ? colors.tint : "transparent",
         borderWidth: 1,
         borderColor: colors.tint,
-        alignItems: 'center',
+        alignItems: "center",
       },
     }).btn,
   optionText: (
-    typography: typeof import('@/theme').typography,
+    typography: typeof import("@/theme").typography,
     colors: any,
-    active: boolean,
+    active: boolean
   ) =>
     StyleSheet.create({
       txt: {
