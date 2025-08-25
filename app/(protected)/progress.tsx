@@ -6,7 +6,7 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import React from "react";
 import { FlatList, StyleSheet } from "react-native";
 
-export default function HistoryScreen() {
+export default function ProgressScreen() {
   const { session } = useAuth();
   const userId = session?.user.id;
   const {
@@ -19,13 +19,13 @@ export default function HistoryScreen() {
 
   if (isLoading) return <ThemedText>Loading...</ThemedText>;
   if (error)
-    return <ThemedText>Error loading history: {error.message}</ThemedText>;
+    return <ThemedText>Error loading progress: {error.message}</ThemedText>;
   if (!calculations?.length)
     return <ThemedText>No calculations found.</ThemedText>;
 
   return (
     <ThemedView style={[styles.container, { backgroundColor }]}>
-      <ThemedText style={styles.title}>📄 History</ThemedText>
+      <ThemedText style={styles.title}>📈 Progress</ThemedText>
       <FlatList
         data={calculations}
         keyExtractor={(item) => item.id}

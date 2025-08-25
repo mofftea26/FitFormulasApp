@@ -1,7 +1,6 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSaveCalculation } from "@/hooks/mutations/useSaveCalculation";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { Formik } from "formik";
 import React from "react";
@@ -27,32 +26,34 @@ const validationSchema = yup.object().shape({
 export default function TDEEForm() {
   const { session } = useAuth();
   const userId = session?.user.id || "";
-  const saveCalculation = useSaveCalculation(userId);
   const tintColor = useThemeColor({}, "tint");
   const iconColor = useThemeColor({}, "icon");
 
-  const handleSubmit = (values: any) => {
-    const { weight, height, age, gender, activity } = values;
-    const bmr =
-      gender === "male"
-        ? 10 * weight + 6.25 * height - 5 * age + 5
-        : 10 * weight + 6.25 * height - 5 * age - 161;
-
-    const multiplier =
-      ACTIVITY_LEVELS[activity as keyof typeof ACTIVITY_LEVELS];
-    const tdee = Math.round(bmr * multiplier);
-
-    saveCalculation.mutate(
-      {
-        type: "TDEE",
-        result: { tdee },
-        input: { ...values, bmr },
-      },
-      {
-        onSuccess: () => Alert.alert("Saved", `TDEE: ${tdee} kcal`),
-        onError: (err: any) => Alert.alert("Error", err.message),
-      }
-    );
+  const handleSubmit = async (values: any) => {
+    try {
+      const { weight, height, age, gender, activity } = values;
+      const bmr =
+        gender === "male"
+          ? 10 * weight + 6.25 * height - 5 * age + 5
+          : 10 * weight + 6.25 * height - 5 * age - 161;
+      const res = await fetch(
+        "https://gxrxyjeacovzbmczydgw.supabase.co/functions/v1/tdee",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            bmr,
+            activityLevel: activity,
+          }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to calculate");
+      Alert.alert("TDEE", `${data.tdee} kcal`);
+    } catch (err: any) {
+      Alert.alert("Error", err.message);
+    }
   };
 
   return (

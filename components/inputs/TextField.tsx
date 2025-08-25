@@ -1,4 +1,5 @@
 import React from 'react';
+// eslint-disable-next-line import/no-unresolved
 import { Controller, Control, FieldValues } from 'react-hook-form';
 import { TextInput, StyleSheet, TextInputProps, View, Text } from 'react-native';
 import { useTheme } from '@/theme';
