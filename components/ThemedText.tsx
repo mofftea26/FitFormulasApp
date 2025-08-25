@@ -15,10 +15,10 @@ export function ThemedText({
   type = 'default',
   ...rest
 }: ThemedTextProps) {
-  const color =
-    type === 'link'
-      ? useThemeColor({ light: lightColor, dark: darkColor }, 'tint')
-      : useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  const color = useThemeColor(
+    { light: lightColor, dark: darkColor },
+    type === 'link' ? 'tint' : 'text'
+  );
 
   return (
     <Text

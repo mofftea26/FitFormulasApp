@@ -1,152 +1,86 @@
-import { router } from "expo-router";
-import { Alert, StyleSheet, TouchableOpacity } from "react-native";
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { useAuth } from '@/contexts/AuthContext';
+import { useUserCalculations } from '@/hooks/queries/useUserCalculations';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { useAuth } from "@/contexts/AuthContext";
-import { useThemeColor } from "@/hooks/useThemeColor";
-
-// const fetchData = async () => {
-//   const { data, error } = await supabase.from("users").select("*");
-//   console.log("data", data);
-// };
-
-// const calculateData = async (user_id: string) => {
-//   const { data, error } = await supabase.from("calculations").insert([
-//     {
-//       user_id: user_id,
-//       type: "BMR",
-//       result_json: { bmr: 2000 },
-//     },
-//   ]);
-//   console.log("data", data);
-// };
+const QUICK = [
+  { key: 'BMR', icon: 'flame' },
+  { key: 'TDEE', icon: 'pulse' },
+  { key: 'Macros', icon: 'restaurant' },
+  { key: 'BMI', icon: 'body' },
+] as const;
 
 export default function HomeScreen() {
-  const { session, signOut } = useAuth();
-  const tintColor = useThemeColor({}, "tint");
-  const backgroundColor = useThemeColor({}, "background");
-  const textColor = useThemeColor({}, "text");
+  const { session } = useAuth();
+  const userId = session?.user.id || '';
+  const { data: calculations } = useUserCalculations(userId);
+  const router = useRouter();
+  const background = useThemeColor({}, 'background');
+  const text = useThemeColor({}, 'text');
 
-  const handleSignOut = async () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Sign Out",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await signOut();
-            router.replace("/(auth)/signin");
-          } catch (error) {
-            Alert.alert("Error", "Failed to sign out. Please try again.");
-          }
-        },
-      },
-    ]);
-  };
-
-  // useEffect(() => {
-  //   fetchData();
-  //   calculateData(session?.user?.id || "");
-  //   fetchData();
-  // }, []);
+  const recent = calculations?.slice(0, 5) || [];
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <ThemedText style={styles.subtitle}>
-          You&apos;re successfully signed in to your fitness app
-        </ThemedText>
-      </ThemedView>
+    <ThemedView style={[styles.container, { backgroundColor: background }]}> 
+      <ThemedText style={styles.section}>Recent Calculations</ThemedText>
+      {recent.length ? (
+        <FlatList
+          data={recent}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <ThemedText>{item.type}: {JSON.stringify(item.resultJson)}</ThemedText>
+          )}
+        />
+      ) : (
+        <ThemedText>No recent calculations</ThemedText>
+      )}
 
-      <ThemedView style={[styles.userInfo, { borderColor: textColor + "20" }]}>
-        <ThemedText type="subtitle">User Information</ThemedText>
-        <ThemedText>Email: {session?.user?.email}</ThemedText>
-        <ThemedText>User ID: {session?.user?.id}</ThemedText>
-        <ThemedText>
-          Email Verified: {session?.user?.email_confirmed_at ? "Yes" : "No"}
-        </ThemedText>
-      </ThemedView>
+      <ThemedText style={styles.section}>Quick Actions</ThemedText>
+      <View style={styles.quickGrid}>
+        {QUICK.map((q) => (
+          <TouchableOpacity
+            key={q.key}
+            style={[styles.quickCard, { backgroundColor: background, borderColor: text }]}
+            onPress={() =>
+              router.push({ pathname: '/(protected)/calculators', params: { type: q.key } })
+            }
+          >
+            <Ionicons name={q.icon as any} size={28} color={text} />
+            <ThemedText>{q.key}</ThemedText>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-      <ThemedView style={styles.content}>
-        <ThemedText type="subtitle">Your Fitness Dashboard</ThemedText>
-        <ThemedText style={styles.description}>
-          This is your protected home page. Here you can add your fitness
-          tracking features, workout plans, progress monitoring, and more.
-        </ThemedText>
-
-        <ThemedView style={styles.featureList}>
-          <ThemedText>• Track your workouts</ThemedText>
-          <ThemedText>• Monitor your progress</ThemedText>
-          <ThemedText>• Set fitness goals</ThemedText>
-          <ThemedText>• View your statistics</ThemedText>
-        </ThemedView>
-      </ThemedView>
-
-      <TouchableOpacity
-        style={[styles.signOutButton, { backgroundColor: tintColor }]}
-        onPress={handleSignOut}
-        activeOpacity={0.8}
-      >
-        <ThemedText
-          style={[styles.signOutButtonText, { color: backgroundColor }]}
-        >
-          Sign Out
-        </ThemedText>
-      </TouchableOpacity>
+      <ThemedText style={styles.section}>Fitness Tip</ThemedText>
+      <ThemedText>
+        Your BMR represents the minimum calories your body needs to function at rest. Knowing this helps you create
+        effective nutrition and fitness plans.
+      </ThemedText>
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    paddingTop: 0,
+  container: { flex: 1, padding: 16 },
+  section: { fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
+  quickGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 16,
   },
-  header: {
-    alignItems: "center",
-    marginTop: 60,
-    marginBottom: 40,
-  },
-  subtitle: {
-    textAlign: "center",
-    marginTop: 8,
-    opacity: 0.7,
-  },
-  userInfo: {
-    padding: 20,
+  quickCard: {
+    width: '48%',
+    aspectRatio: 1,
     borderRadius: 12,
-    marginBottom: 30,
-    gap: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
     borderWidth: 1,
-  },
-  content: {
-    flex: 1,
-    gap: 16,
-  },
-  description: {
-    lineHeight: 24,
-    opacity: 0.8,
-  },
-  featureList: {
-    marginTop: 16,
-    gap: 8,
-  },
-  signOutButton: {
-    height: 50,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 20,
-  },
-  signOutButtonText: {
-    fontSize: 18,
-    fontWeight: "600",
   },
 });

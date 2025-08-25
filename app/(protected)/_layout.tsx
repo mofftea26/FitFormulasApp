@@ -29,29 +29,29 @@ export default function ProtectedLayout() {
           }}
         />
         <Tabs.Screen
-          name="profile"
-          options={{
-            title: "Profile",
-            tabBarIcon: ({ color, size }) => (
-              <TabIcon name="person" color={color} size={size} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="history"
-          options={{
-            title: "History",
-            tabBarIcon: ({ color, size }) => (
-              <TabIcon name="calendar" color={color} size={size} />
-            ),
-          }}
-        />
-        <Tabs.Screen
           name="calculators"
           options={{
             title: "Calculators",
             tabBarIcon: ({ color, size }) => (
               <TabIcon name="calculator" color={color} size={size} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="progress"
+          options={{
+            title: "Progress",
+            tabBarIcon: ({ color, size }) => (
+              <TabIcon name="trending-up" color={color} size={size} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: "Profile",
+            tabBarIcon: ({ color, size }) => (
+              <TabIcon name="person" color={color} size={size} />
             ),
           }}
         />

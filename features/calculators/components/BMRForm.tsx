@@ -10,37 +10,52 @@ import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { useTheme } from '@/theme';
 import { bmrSchema, BmrForm } from '@/utils/form';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSaveCalculation } from '@/hooks/mutations/useSaveCalculation';
 
 export default function BMRForm() {
   const { session } = useAuth();
   const userId = session?.user.id || '';
-  const saveCalculation = useSaveCalculation(userId);
   const { colors, spacing, typography } = useTheme();
 
   const { control, handleSubmit, watch, setValue } = useForm<BmrForm>({
     resolver: zodResolver(bmrSchema),
-    defaultValues: { age: '', weight: '', height: '', gender: 'male' },
+    defaultValues: {
+      age: '',
+      weight: '',
+      height: '',
+      gender: 'male',
+      equation: 'mifflin',
+    },
   });
 
   const gender = watch('gender');
+  const equation = watch('equation');
 
-  const onSubmit = (values: BmrForm) => {
-    const age = parseFloat(values.age);
-    const weight = parseFloat(values.weight);
-    const height = parseFloat(values.height);
-    const bmr =
-      values.gender === 'male'
-        ? 10 * weight + 6.25 * height - 5 * age + 5
-        : 10 * weight + 6.25 * height - 5 * age - 161;
-
-    saveCalculation.mutate(
-      { type: 'BMR', result: { bmr }, input: { ...values } },
-      {
-        onSuccess: () => Alert.alert('Saved', `BMR: ${Math.round(bmr)} kcal`),
-        onError: (err: any) => Alert.alert('Error', err.message),
-      }
-    );
+  const onSubmit = async (values: BmrForm) => {
+    try {
+      const res = await fetch(
+        'https://gxrxyjeacovzbmczydgw.supabase.co/functions/v1/bmr',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId,
+            weightKg: parseFloat(values.weight),
+            heightCm: parseFloat(values.height),
+            age: parseFloat(values.age),
+            gender: values.gender,
+            bodyFatPercent: values.bodyFatPercent
+              ? parseFloat(values.bodyFatPercent)
+              : undefined,
+            equation: values.equation,
+          }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to calculate');
+      Alert.alert('BMR', `${data.bmr} kcal`);
+    } catch (err: any) {
+      Alert.alert('Error', err.message);
+    }
   };
 
   return (
@@ -63,6 +78,28 @@ export default function BMRForm() {
           </TouchableOpacity>
         ))}
       </View>
+      <View style={styles.genderRow(spacing)}>
+        {(['mifflin', 'harris', 'katch'] as const).map((e) => (
+          <TouchableOpacity
+            key={e}
+            style={styles.genderButton(spacing, colors, equation === e)}
+            onPress={() => setValue('equation', e)}
+            accessibilityRole="button"
+          >
+            <ThemedText style={styles.genderText(typography, colors, equation === e)}>
+              {e}
+            </ThemedText>
+          </TouchableOpacity>
+        ))}
+      </View>
+      {equation === 'katch' && (
+        <TextField
+          control={control}
+          name="bodyFatPercent"
+          label="Body Fat %"
+          keyboardType="numeric"
+        />
+      )}
       <PrimaryButton label="Calculate BMR" onPress={handleSubmit(onSubmit)} />
     </ThemedView>
   );
