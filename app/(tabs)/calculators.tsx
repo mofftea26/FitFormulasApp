@@ -72,8 +72,7 @@ export default function CalculatorsScreen() {
         onRequestClose={() => setActive(null)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.sheet, { backgroundColor: background }]}
-          >
+          <View style={[styles.sheet, { backgroundColor: background }]}> 
             <TouchableOpacity style={styles.close} onPress={() => setActive(null)}>
               <Ionicons name="close" size={24} color={text} />
             </TouchableOpacity>

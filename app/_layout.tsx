@@ -21,7 +21,6 @@ export default function RootLayout() {
   const queryClient = new QueryClient();
 
   if (!loaded) {
-    // Async font loading only occurs in development.
     return null;
   }
 
@@ -35,10 +34,12 @@ export default function RootLayout() {
             <Stack>
               <Stack.Screen name="index" options={{ headerShown: false }} />
               <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen
-                name="(protected)"
+                name="(progress-stack)"
                 options={{ headerShown: false }}
               />
+              <Stack.Screen name="(modals)" options={{ headerShown: false }} />
               <Stack.Screen name="+not-found" />
             </Stack>
           </AuthProvider>

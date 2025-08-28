@@ -1,9 +1,9 @@
-import { useThemeColor } from "@/hooks/useThemeColor";
-import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
-export default function ProtectedLayout() {
+export default function TabsLayout() {
   const tint = useThemeColor({}, "tint");
   const icon = useThemeColor({}, "icon");
   const background = useThemeColor({}, "background");
@@ -13,17 +13,15 @@ export default function ProtectedLayout() {
         screenOptions={{
           tabBarActiveTintColor: tint,
           tabBarInactiveTintColor: icon,
-          tabBarStyle: {
-            backgroundColor: background,
-          },
+          tabBarStyle: { backgroundColor: background },
         }}
       >
         <Tabs.Screen
-          name="home"
+          name="index"
           options={{
             title: "Home",
             tabBarIcon: ({ color, size }) => (
-              <TabIcon name="home" color={color} size={size} />
+              <Ionicons name="home" color={color} size={size} />
             ),
           }}
         />
@@ -32,7 +30,7 @@ export default function ProtectedLayout() {
           options={{
             title: "Calculators",
             tabBarIcon: ({ color, size }) => (
-              <TabIcon name="calculator" color={color} size={size} />
+              <Ionicons name="calculator" color={color} size={size} />
             ),
           }}
         />
@@ -41,7 +39,7 @@ export default function ProtectedLayout() {
           options={{
             title: "Progress",
             tabBarIcon: ({ color, size }) => (
-              <TabIcon name="trending-up" color={color} size={size} />
+              <Ionicons name="trending-up" color={color} size={size} />
             ),
           }}
         />
@@ -50,22 +48,11 @@ export default function ProtectedLayout() {
           options={{
             title: "Profile",
             tabBarIcon: ({ color, size }) => (
-              <TabIcon name="person" color={color} size={size} />
+              <Ionicons name="person" color={color} size={size} />
             ),
           }}
         />
       </Tabs>
     </SafeAreaView>
   );
-}
-function TabIcon({
-  name,
-  color,
-  size,
-}: {
-  name: any;
-  color: string;
-  size: number;
-}) {
-  return <Ionicons name={name} color={color} size={size} />;
 }

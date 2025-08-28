@@ -6,7 +6,7 @@ export function useCalculationsById(userId: string, ids: string[]) {
   return useQuery({
     queryKey: qk.byId(userId, ids),
     queryFn: () => calcApi.byId({ userId, ids }),
+    enabled: ids.length > 0,
     staleTime: 60_000,
-    enabled: !!userId && ids.length > 0,
   });
 }

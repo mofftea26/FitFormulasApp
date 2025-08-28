@@ -1,5 +1,5 @@
-const BASE = (import.meta as any).env.VITE_SUPABASE_EDGE_URL;
-const TOKEN = (import.meta as any).env.VITE_SUPABASE_ANON_KEY;
+const BASE = process.env.EXPO_PUBLIC_SUPABASE_EDGE_URL!;
+const TOKEN = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
 export async function postJson<TReq, TRes>(path: string, body: TReq): Promise<TRes> {
   const res = await fetch(`${BASE}/${path}`, {

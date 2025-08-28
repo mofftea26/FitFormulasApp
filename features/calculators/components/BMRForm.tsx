@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { Alert, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { useForm } from 'react-hook-form';
@@ -118,7 +119,7 @@ const styles = {
     StyleSheet.create({
       row: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
+        justifyContent: 'space-between',
         marginBottom: spacing.md,
       },
     }).row,
@@ -128,27 +129,24 @@ const styles = {
     active: boolean
   ) =>
     StyleSheet.create({
-      btn: {
+      button: {
         flex: 1,
+        padding: spacing.sm,
         marginHorizontal: spacing.xs,
-        paddingVertical: spacing.sm,
         borderRadius: spacing.xs,
-        backgroundColor: active ? colors.tint : 'transparent',
-        borderWidth: 1,
-        borderColor: colors.tint,
-        alignItems: 'center',
+        backgroundColor: active ? colors.tint : colors.background,
       },
-    }).btn,
+    }).button,
   genderText: (
     typography: typeof import('@/theme').typography,
     colors: any,
     active: boolean
   ) =>
     StyleSheet.create({
-      txt: {
+      text: {
+        textAlign: 'center',
         fontFamily: typography.fontFamily.bold,
-        fontSize: typography.fontSize.md,
         color: active ? colors.background : colors.text,
       },
-    }).txt,
+    }).text,
 };

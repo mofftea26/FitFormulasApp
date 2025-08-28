@@ -9,20 +9,15 @@ export default function Index() {
   const backgroundColor = useThemeColor({}, "background");
 
   useEffect(() => {
-    console.log("Index useEffect - loading:", loading, "session:", !!session);
-
     if (!loading) {
       if (session) {
-        // User is authenticated, redirect to protected home
-        router.push("/(protected)/home");
+        router.push("/(tabs)");
       } else {
-        // User is not authenticated, redirect to signin
         router.push("/(auth)/signin");
       }
     }
   }, [session, loading]);
 
-  // Show loading indicator while checking authentication
   if (loading) {
     return (
       <View
@@ -38,6 +33,5 @@ export default function Index() {
     );
   }
 
-  // This component doesn't render anything visible after navigation
   return null;
 }

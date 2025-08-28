@@ -1,16 +1,16 @@
 import React from 'react';
 // eslint-disable-next-line import/no-unresolved
-import { Controller, Control, FieldValues } from 'react-hook-form';
+import { Controller, Control } from 'react-hook-form';
 import { TextInput, StyleSheet, TextInputProps, View, Text } from 'react-native';
 import { useTheme } from '@/theme';
 
-export interface TextFieldProps<T extends FieldValues> extends TextInputProps {
+export interface TextFieldProps extends TextInputProps {
   name: string;
-  control: Control<T>;
+  control: Control<any>;
   label: string;
 }
 
-export function TextField<T extends FieldValues>({ name, control, label, ...rest }: TextFieldProps<T>) {
+export function TextField({ name, control, label, ...rest }: TextFieldProps) {
   const { colors, spacing, typography } = useTheme();
   return (
     <Controller

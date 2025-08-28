@@ -7,6 +7,5 @@ export function useCalculationsLatest(userId: string) {
     queryKey: qk.latest(userId),
     queryFn: () => calcApi.latest({ userId }),
     staleTime: 60_000,
-    enabled: !!userId,
   });
 }
