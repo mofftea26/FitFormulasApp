@@ -1,28 +1,21 @@
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
 import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { router } from "expo-router";
 import { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, TouchableOpacity, View } from "react-native";
 
 export default function Index() {
-  const { session, loading } = useAuth();
+  const { session, loading, signOut } = useAuth();
   const backgroundColor = useThemeColor({}, "background");
 
   useEffect(() => {
-    console.log("Index useEffect - loading:", loading, "session:", !!session);
-
-    if (!loading) {
-      if (session) {
-        // User is authenticated, redirect to protected home
-        router.push("/(protected)/home");
-      } else {
-        // User is not authenticated, redirect to signin
-        router.push("/(auth)/signin");
-      }
+    if (!loading && !session) {
+      router.replace("/(auth)/signin");
     }
   }, [session, loading]);
 
-  // Show loading indicator while checking authentication
   if (loading) {
     return (
       <View
@@ -38,6 +31,18 @@ export default function Index() {
     );
   }
 
-  // This component doesn't render anything visible after navigation
-  return null;
+  if (!session) {
+    return null;
+  }
+
+  return (
+    <ThemedView
+      style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+    >
+      <ThemedText type="title">You are signed in</ThemedText>
+      <TouchableOpacity onPress={signOut} style={{ marginTop: 20 }}>
+        <ThemedText type="link">Sign Out</ThemedText>
+      </TouchableOpacity>
+    </ThemedView>
+  );
 }
