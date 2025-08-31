@@ -1,5 +1,5 @@
-import { useColorScheme } from 'react-native';
-import { Colors } from '@/constants/Colors';
+import { Colors } from "@/theme/constants/Colors";
+import { useColorScheme } from "react-native";
 
 export const spacing = {
   xs: 4,
@@ -11,8 +11,8 @@ export const spacing = {
 
 export const typography = {
   fontFamily: {
-    regular: 'System',
-    bold: 'System-Bold',
+    regular: "System",
+    bold: "System-Bold",
   },
   fontSize: {
     sm: 14,
@@ -23,7 +23,7 @@ export const typography = {
 };
 
 export const useTheme = () => {
-  const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
+  const scheme = useColorScheme() === "dark" ? "dark" : "light";
   const colors = Colors[scheme];
   return { colors, spacing, typography };
 };

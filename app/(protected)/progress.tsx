@@ -1,56 +1,11 @@
-import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { useAuth } from "@/contexts/AuthContext";
-import { useUserCalculations } from "@/hooks/queries/useUserCalculations";
-import { useThemeColor } from "@/hooks/useThemeColor";
 import React from "react";
-import { FlatList, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 
 export default function ProgressScreen() {
-  const { session } = useAuth();
-  const userId = session?.user.id;
-  const {
-    data: calculations,
-    isLoading,
-    error,
-  } = useUserCalculations(userId || "");
-  const backgroundColor = useThemeColor({}, "background");
-  const textColor = useThemeColor({}, "text");
-
-  if (isLoading) return <ThemedText>Loading...</ThemedText>;
-  if (error)
-    return <ThemedText>Error loading progress: {error.message}</ThemedText>;
-  if (!calculations?.length)
-    return <ThemedText>No calculations found.</ThemedText>;
-
-  return (
-    <ThemedView style={[styles.container, { backgroundColor }]}>
-      <ThemedText style={styles.title}>📈 Progress</ThemedText>
-      <FlatList
-        data={calculations}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <ThemedView style={[styles.item, { borderColor: textColor + "30" }]}>
-            <ThemedText style={styles.type}>{item.type}</ThemedText>
-            <ThemedText>
-              Date: {new Date(item.createdAt).toLocaleDateString()}
-            </ThemedText>
-            <ThemedText>Result: {JSON.stringify(item.resultJson)}</ThemedText>
-          </ThemedView>
-        )}
-      />
-    </ThemedView>
-  );
+  return <ThemedView style={[styles.container]}></ThemedView>;
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 20 },
-  item: {
-    marginBottom: 20,
-    padding: 10,
-    borderWidth: 1,
-    borderRadius: 8,
-  },
-  type: { fontSize: 18, fontWeight: "600" },
 });

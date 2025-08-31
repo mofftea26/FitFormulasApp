@@ -1,5 +1,15 @@
 import { supabase } from "../supabase";
-import { UserProfile } from "../types/user";
+
+interface UserProfile {
+  id: string;
+  createdAt: string;
+  username: string;
+  gender: string;
+  dateOfBirth: string;
+  heightCm: number;
+  weightKg: number;
+  emailVerified: boolean;
+}
 
 export async function getUserProfile(userId: string): Promise<UserProfile> {
   const { data, error } = await supabase
