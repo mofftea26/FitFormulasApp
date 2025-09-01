@@ -1,5 +1,5 @@
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { ThemedView } from "@/components/ui/ThemedView";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserProfile } from "@/hooks/queries/useUserProfile";
 import { useThemeColor } from "@/hooks/useThemeColor";

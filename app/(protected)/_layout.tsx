@@ -1,12 +1,13 @@
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { Calculator, Home, TrendingUp, User } from "lucide-react-native";
 import { SafeAreaView } from "react-native";
 
 export default function ProtectedLayout() {
   const tint = useThemeColor({}, "tint");
   const icon = useThemeColor({}, "icon");
   const background = useThemeColor({}, "background");
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <Tabs
@@ -23,7 +24,7 @@ export default function ProtectedLayout() {
           options={{
             title: "Home",
             tabBarIcon: ({ color, size }) => (
-              <TabIcon name="home" color={color} size={size} />
+              <TabIcon Icon={Home} color={color} size={size} />
             ),
           }}
         />
@@ -32,7 +33,7 @@ export default function ProtectedLayout() {
           options={{
             title: "Calculators",
             tabBarIcon: ({ color, size }) => (
-              <TabIcon name="calculator" color={color} size={size} />
+              <TabIcon Icon={Calculator} color={color} size={size} />
             ),
           }}
         />
@@ -41,7 +42,7 @@ export default function ProtectedLayout() {
           options={{
             title: "Progress",
             tabBarIcon: ({ color, size }) => (
-              <TabIcon name="trending-up" color={color} size={size} />
+              <TabIcon Icon={TrendingUp} color={color} size={size} />
             ),
           }}
         />
@@ -50,7 +51,7 @@ export default function ProtectedLayout() {
           options={{
             title: "Profile",
             tabBarIcon: ({ color, size }) => (
-              <TabIcon name="person" color={color} size={size} />
+              <TabIcon Icon={User} color={color} size={size} />
             ),
           }}
         />
@@ -58,14 +59,15 @@ export default function ProtectedLayout() {
     </SafeAreaView>
   );
 }
+
 function TabIcon({
-  name,
+  Icon,
   color,
   size,
 }: {
-  name: any;
+  Icon: React.ComponentType<{ color?: string; size?: number }>;
   color: string;
   size: number;
 }) {
-  return <Ionicons name={name} color={color} size={size} />;
+  return <Icon color={color} size={size} />;
 }

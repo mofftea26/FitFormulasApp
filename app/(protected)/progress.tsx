@@ -1,4 +1,4 @@
-import { ThemedView } from "@/components/ThemedView";
+import { ThemedView } from "@/components/ui/ThemedView";
 import React from "react";
 import { StyleSheet } from "react-native";
 

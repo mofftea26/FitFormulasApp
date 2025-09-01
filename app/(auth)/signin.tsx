@@ -10,8 +10,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { ThemedView } from "@/components/ui/ThemedView";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { signInWithEmail } from "@/services/authService";
 
@@ -130,7 +130,9 @@ export default function SigninScreen() {
               activeOpacity={0.8}
               disabled={isLoading}
             >
-              <ThemedText style={[styles.buttonText, { color: backgroundColor }]}>
+              <ThemedText
+                style={[styles.buttonText, { color: backgroundColor }]}
+              >
                 {isLoading ? "Signing In..." : "Sign In"}
               </ThemedText>
             </TouchableOpacity>
