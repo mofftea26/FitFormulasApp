@@ -1,5 +1,6 @@
-// features/home/components/recentSection/models.ts
+// src/api/calculations/models.ts
 
+// Your models (unchanged)
 export type CalcType = "BMR" | "TDEE" | "Macros" | "BMI" | "BodyComposition";
 
 export interface BaseCalc<TType extends CalcType, TResult, TInput> {
@@ -71,7 +72,7 @@ export type BodyCompositionCalc = BaseCalc<
   BodyCompositionInput
 >;
 
-/** The full backend response shape */
+/** Full backend response for /calculations-latest */
 export interface RecentCalculationsResponse {
   BMR?: BmrCalc;
   TDEE?: TdeeCalc;
@@ -79,3 +80,27 @@ export interface RecentCalculationsResponse {
   BMI?: BmiCalc;
   BodyComposition?: BodyCompositionCalc;
 }
+
+// Convenience unions
+export type AnyCalc =
+  | BmrCalc
+  | TdeeCalc
+  | MacrosCalc
+  | BmiCalc
+  | BodyCompositionCalc;
+
+// Requests
+export type AllReq = { userId: string };
+export type ByDateReq = { userId: string; startDate: string; endDate: string };
+export type ByIdReq = { userId: string; ids: string[] };
+export type LatestReq = { userId: string };
+export type ByTypeReq = { userId: string; type: "BMR" | "TDEE" | "Macros" }; // allowedTypes in EF
+export type DeleteReq = { userId: string; ids: string[] };
+
+// Responses
+export type AllRes = AnyCalc[];
+export type ByDateRes = AnyCalc[];
+export type ByIdRes = AnyCalc[];
+export type LatestRes = RecentCalculationsResponse;
+export type ByTypeRes = AnyCalc[]; // narrowed in client overloads
+export type DeleteRes = { success: true };
