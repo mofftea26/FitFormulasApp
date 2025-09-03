@@ -1,4 +1,4 @@
-import { CalcType } from "../models";
+import { CalcType } from "../../features/home/recentSection/models";
 
 export const CARD_COLORS: Record<CalcType, string> = {
   BMR: "#EF4444", // red-500

@@ -3,9 +3,9 @@ import { ThemedText } from "@/components/ui/ThemedText";
 import { capitalize, humanize, round1 } from "@/utils/helpers";
 import React, { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
+import { CARD_COLORS } from "../../../constants/calculators/cardColors";
+import { CARD_ICONS } from "../../../constants/calculators/cardIcons";
 import { RecentCard } from "./components/RecentCard";
-import { CARD_COLORS } from "./constants/cardColors";
-import { CARD_ICONS } from "./constants/cardIcons";
 import { CalcType, RecentCalculationsResponse } from "./models";
 
 export type RecentSectionProps = {
