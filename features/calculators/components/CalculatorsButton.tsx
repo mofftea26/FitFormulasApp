@@ -119,8 +119,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    flex: 1,
-    flexBasis: "50%",
+    width: "100%",
   },
   content: {
     alignItems: "center",
