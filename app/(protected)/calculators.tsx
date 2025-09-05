@@ -174,7 +174,6 @@ const styles = StyleSheet.create({
     flexBasis: "48%",
     flexGrow: 1,
     maxWidth: "100%",
-    marginBottom: 16,
   },
   cellFull: {
     flexBasis: "100%",
