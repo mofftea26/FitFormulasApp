@@ -3,7 +3,13 @@ import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { StyleSheet, View } from "react-native";
 
 import { ThemedView } from "@/components/ui/ThemedView";
@@ -19,6 +25,9 @@ import MacrosForm from "@/features/calculators/forms/MacrosForm";
 import TdeeForm from "@/features/calculators/forms/TdeeForm";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
+// ⬇️ read/clear ?open=...
+import { useLocalSearchParams, useRouter } from "expo-router";
+
 type CalcKey = "BMR" | "TDEE" | "Macros" | "BodyComposition" | "BMI";
 
 const FormByKey: Record<CalcKey, React.FC<{ onDone: () => void }>> = {
@@ -29,17 +38,37 @@ const FormByKey: Record<CalcKey, React.FC<{ onDone: () => void }>> = {
   BMI: BmiForm,
 };
 
+// accept common aliases (case-insensitive)
+const OPEN_MAP: Record<string, CalcKey> = {
+  bmr: "BMR",
+  tdee: "TDEE",
+  macros: "Macros",
+  bmi: "BMI",
+  bodycomp: "BodyComposition",
+  bodycomposition: "BodyComposition",
+};
+
 export default function CalculatorsScreen() {
   const sheetRef = useRef<BottomSheet>(null);
   const [active, setActive] = useState<CalcKey | null>(null);
   const bgColor = useThemeColor({}, "background");
   const tintColor = useThemeColor({}, "tint");
-  const snapPoints = useMemo(() => ["50%", "90%"], []);
+  const snapPoints = useMemo(() => ["55%", "90%"], []);
+
+  const router = useRouter();
+  const params = useLocalSearchParams<{ open?: string | string[] }>();
+  const openParam =
+    typeof params.open === "string"
+      ? params.open
+      : Array.isArray(params.open)
+      ? params.open[0]
+      : undefined;
 
   const open = useCallback((k: CalcKey) => {
     setActive(k);
+    // open immediately; expand tends to feel a tad snappier
     requestAnimationFrame(() => {
-      sheetRef.current?.snapToIndex(1);
+      sheetRef.current?.expand();
     });
   }, []);
 
@@ -69,6 +98,20 @@ export default function CalculatorsScreen() {
     { key: "BodyComposition", title: "Body Composition" },
     { key: "BMI", title: "BMI" },
   ];
+
+  useLayoutEffect(() => {
+    if (!openParam) return;
+    const normalized = openParam.toLowerCase().replace(/[_\s-]/g, "");
+    const key = OPEN_MAP[normalized];
+    if (!key) return;
+
+    requestAnimationFrame(() => {
+      open(key);
+      try {
+        router.setParams({ open: undefined });
+      } catch {}
+    });
+  }, [openParam, open, router]);
 
   return (
     <ThemedView style={styles.container}>

@@ -8,6 +8,8 @@ import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { QuickActionButton } from "./components/QuickActionButton";
 import { QUICK_ACTIONS, QuickActionType } from "./models";
 
+const CALC_ROUTE = "/(protected)/calculators";
+
 export type QuickActionsProps = {
   title?: string;
   onPress?: (type: QuickActionType) => void; // optional override
@@ -21,17 +23,21 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
   const icon = useThemeColor({}, "icon");
   const router = useRouter();
 
+  const goToCalculator = (type?: QuickActionType) => {
+    if (type) {
+      router.push({ pathname: CALC_ROUTE, params: { open: type } });
+    } else {
+      router.push(CALC_ROUTE);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      {/* Title + View all */}
       <View style={styles.header}>
         <ThemedText style={[styles.title]}>{title}</ThemedText>
 
         <TouchableOpacity
-          onPress={() => {
-            // go to calculators tab
-            router.push("/calculators");
-          }}
+          onPress={() => goToCalculator()}
           style={styles.viewAll}
           accessibilityRole="button"
           accessibilityLabel="View all calculators"
@@ -43,7 +49,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         </TouchableOpacity>
       </View>
 
-      {/* One horizontal row with 3 buttons */}
       <View style={styles.row}>
         {QUICK_ACTIONS.map(({ type, label, Icon }) => (
           <QuickActionButton
@@ -52,10 +57,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
             Icon={Icon}
             tintColor={icon}
             borderColor={icon}
-            onPress={() => {
-              if (onPress) onPress(type);
-              else console.log(`[QuickAction] Go to calculator: ${type}`);
-            }}
+            onPress={() => (onPress ? onPress(type) : goToCalculator(type))}
             style={styles.item}
           />
         ))}
