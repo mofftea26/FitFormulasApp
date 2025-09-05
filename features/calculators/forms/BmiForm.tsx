@@ -1,13 +1,18 @@
+import { FormikProvider } from "formik";
+import { Ruler, Scale } from "lucide-react-native";
+import React, { useRef, useState } from "react";
+import { Pressable, StyleSheet, TextInput } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { z } from "zod";
+
 import { useCalcBmi } from "@/api/calculators/queries";
 import { FormTextInput } from "@/components/shared/forms/FormTextInput";
 import { ResultCard } from "@/components/shared/forms/ResultCard";
 import { SubmitBar } from "@/components/shared/forms/SubmitBar";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { ThemedView } from "@/components/ui/ThemedView";
 import { useAuth } from "@/contexts/AuthContext";
-import { FormikProvider } from "formik";
-import { Ruler, Scale } from "lucide-react-native";
-import React, { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { z } from "zod";
+import { useThemeColor } from "@/hooks/useThemeColor";
 import { useZodFormik } from "../hooks/uzeZodFormik";
 
 const schema = z.object({
@@ -21,7 +26,9 @@ const BmiForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   const userId = session?.user.id;
   const { mutateAsync, isPending, data } = useCalcBmi();
   const [submitted, setSubmitted] = useState(false);
-
+  const tintColor = useThemeColor({}, "tint");
+  const weightRef = useRef<TextInput>(null);
+  const heightRef = useRef<TextInput>(null);
   const form = useZodFormik(schema, {
     initialValues: { weightKg: "", heightCm: "" } as unknown as Values,
     onSubmit: async (v) => {
@@ -35,53 +42,80 @@ const BmiForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   });
 
   return (
-    <View style={{ gap: 12 }}>
-      <Text style={styles.title}>BMI Calculator</Text>
-      <FormikProvider value={form}>
-        <FormTextInput
-          name="weightKg"
-          label="Weight"
-          placeholder="e.g., 88"
-          keyboardType="numeric"
-          Icon={Scale}
-          unit="kg"
-        />
-        <FormTextInput
-          name="heightCm"
-          label="Height"
-          placeholder="e.g., 175"
-          keyboardType="numeric"
-          Icon={Ruler}
-          unit="cm"
-        />
+    <KeyboardAwareScrollView
+      enableOnAndroid
+      extraScrollHeight={20} // nudge focused input above keyboard
+      keyboardOpeningTime={0}
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{ flexGrow: 1 }}
+    >
+      <ThemedView style={{ gap: 12, flex: 1 }}>
+        <ThemedText style={{ ...styles.title, color: tintColor }}>
+          BMI Calculator
+        </ThemedText>
 
-        {!submitted && (
-          <Pressable onPress={form.handleSubmit as any}>
-            <SubmitBar loading={isPending} label="Calculate BMI" />
-          </Pressable>
-        )}
-        {submitted && data && (
-          <View style={{ gap: 8 }}>
-            <ResultCard
-              title="BMI Result"
-              rows={[
-                { label: "BMI", value: data.bmi.toFixed(1) },
-                { label: "Category", value: data.category },
-              ]}
-            />
-            <Pressable onPress={onDone} style={styles.closeBtn}>
-              <Text style={{ color: "#fff", fontWeight: "700" }}>Close</Text>
+        <FormikProvider value={form}>
+          <FormTextInput
+            ref={weightRef}
+            name="weightKg"
+            label="Weight"
+            placeholder="e.g., 88"
+            keyboardType="numeric"
+            Icon={Scale}
+            unit="kg"
+            returnKeyType="next"
+            blurOnSubmit={false}
+            onSubmitEditing={() => heightRef.current?.focus()}
+          />
+          <FormTextInput
+            ref={heightRef}
+            name="heightCm"
+            label="Height"
+            placeholder="e.g., 175"
+            keyboardType="numeric"
+            Icon={Ruler}
+            unit="cm"
+            returnKeyType={submitted ? "done" : "go"}
+            onSubmitEditing={form.handleSubmit as any}
+          />
+
+          {!submitted && (
+            <Pressable onPress={form.handleSubmit as any}>
+              <SubmitBar loading={isPending} label="Calculate BMI" />
             </Pressable>
-          </View>
-        )}
-      </FormikProvider>
-    </View>
+          )}
+
+          {submitted && data && (
+            <ThemedView style={{ gap: 8 }}>
+              <ResultCard
+                title="BMI Result"
+                rows={[
+                  { label: "BMI", value: data.bmi.toFixed(1) },
+                  { label: "Category", value: data.category },
+                ]}
+              />
+              <Pressable onPress={onDone} style={styles.closeBtn}>
+                <ThemedText style={{ color: "#fff", fontWeight: "700" }}>
+                  Close
+                </ThemedText>
+              </Pressable>
+            </ThemedView>
+          )}
+        </FormikProvider>
+      </ThemedView>
+    </KeyboardAwareScrollView>
   );
 };
+
 export default BmiForm;
 
 const styles = StyleSheet.create({
-  title: { fontSize: 18, fontWeight: "700" },
+  title: {
+    fontSize: 20,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 18,
+  },
   closeBtn: {
     backgroundColor: "#10B981",
     padding: 12,

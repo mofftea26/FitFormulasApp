@@ -3,6 +3,7 @@ import React, { useRef } from "react";
 import {
   Animated,
   Pressable,
+  StyleProp,
   StyleSheet,
   Text,
   TextStyle,
@@ -17,8 +18,8 @@ interface CalculatorsButtonProps {
   action: () => void;
   color?: string;
   size?: number;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 }
 
 export function CalculatorsButton({
@@ -73,37 +74,21 @@ export function CalculatorsButton({
       onPress={action}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      style={({ pressed }) => [
+      style={[
         styles.container,
-        {
-          width: size,
-          height: size,
-          backgroundColor: "transparent",
-
-          borderColor: buttonColor,
-        },
+        { borderColor: buttonColor, minHeight: size },
         style,
       ]}
     >
       <Animated.View
         style={[
           styles.content,
-          {
-            transform: [{ scale: scaleAnim }],
-            opacity: opacityAnim,
-          },
+          { transform: [{ scale: scaleAnim }], opacity: opacityAnim },
         ]}
       >
         <Icon size={iconSize} color={color} />
         <Text
-          style={[
-            styles.title,
-            {
-              fontSize,
-              color: colors.text,
-            },
-            textStyle,
-          ]}
+          style={[styles.title, { fontSize, color: colors.text }, textStyle]}
           numberOfLines={2}
         >
           {title}
@@ -119,20 +104,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    width: "100%",
   },
   content: {
     alignItems: "center",
     justifyContent: "center",
-    padding: 8,
+    padding: 12,
     gap: 8,
   },
-  icon: {
-    marginBottom: 8,
-  },
-  title: {
-    fontWeight: "600",
-    textAlign: "center",
-    lineHeight: 18,
-  },
+  title: { fontWeight: "600", textAlign: "center", lineHeight: 18 },
 });

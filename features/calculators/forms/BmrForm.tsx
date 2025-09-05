@@ -1,24 +1,29 @@
+import { FormikProvider } from "formik";
+import { Calendar, Percent, Ruler, Scale, User2 } from "lucide-react-native";
+import React, { useMemo, useRef, useState } from "react";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  useColorScheme,
+  View,
+} from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { z } from "zod";
+
 import { BmrEquation, Gender } from "@/api/calculators/models";
 import { useCalcBmr } from "@/api/calculators/queries";
 import { EnumChips } from "@/components/shared/forms/EnumChips";
 import { FormTextInput } from "@/components/shared/forms/FormTextInput";
 import { ResultCard } from "@/components/shared/forms/ResultCard";
 import { SubmitBar } from "@/components/shared/forms/SubmitBar";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { ThemedView } from "@/components/ui/ThemedView";
 import { useAuth } from "@/contexts/AuthContext";
-import { FormikProvider } from "formik";
-import { Calendar, Percent, Ruler, Scale, User2 } from "lucide-react-native";
-import React, { useMemo, useState } from "react";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from "react-native";
-import { z } from "zod";
-import { useZodFormik } from "../hooks/uzeZodFormik";
-
+import { useThemeColor } from "@/hooks/useThemeColor";
 import { Colors } from "@/theme/constants/Colors";
+import { useZodFormik } from "../hooks/uzeZodFormik";
 
 const schema = z.object({
   weightKg: z.coerce.number().positive("Weight must be > 0"),
@@ -46,10 +51,13 @@ const BmrForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   const userId = session?.user.id;
   const scheme = useColorScheme() ?? "light";
   const icon = Colors[scheme].icon;
-
+  const tintColor = useThemeColor({}, "tint");
   const { mutateAsync, isPending, data } = useCalcBmr();
   const [submitted, setSubmitted] = useState(false);
-
+  const weightRef = useRef<TextInput>(null);
+  const heightRef = useRef<TextInput>(null);
+  const ageRef = useRef<TextInput>(null);
+  const bfRef = useRef<TextInput>(null);
   const form = useZodFormik(schema, {
     initialValues: {
       weightKg: "",
@@ -60,7 +68,6 @@ const BmrForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
       equation: "mifflin",
     } as unknown as Values,
     onSubmit: async (vals) => {
-      // Dynamic requirements
       if (
         (vals.equation === "mifflin" || vals.equation === "harris") &&
         !vals.heightCm
@@ -98,91 +105,122 @@ const BmrForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   const needsBF = form.values.equation === "katch";
 
   return (
-    <View style={{ gap: 12 }}>
-      <Text style={styles.title}>BMR Calculator</Text>
+    <KeyboardAwareScrollView
+      enableOnAndroid
+      keyboardShouldPersistTaps="handled"
+      extraScrollHeight={24}
+      keyboardOpeningTime={0}
+      contentContainerStyle={{ flexGrow: 1, padding: 1 }}
+    >
+      <ThemedView style={{ gap: 12, flex: 1 }}>
+        <ThemedText style={{ ...styles.title, color: tintColor }}>
+          BMR Calculator
+        </ThemedText>
 
-      <EnumChips
-        value={form.values.gender}
-        onChange={(v) => form.setFieldValue("gender", v)}
-        options={genderOptions}
-      />
-      <EnumChips
-        value={form.values.equation}
-        onChange={(v) => form.setFieldValue("equation", v)}
-        options={eqOptions}
-      />
-
-      <FormikProvider value={form}>
-        <FormTextInput
-          name="weightKg"
-          label="Weight"
-          placeholder="e.g., 88"
-          keyboardType="numeric"
-          Icon={Scale}
-          unit="kg"
+        <EnumChips
+          value={form.values.gender}
+          onChange={(v) => form.setFieldValue("gender", v)}
+          options={genderOptions}
         />
-        {needsHeight && (
-          <FormTextInput
-            name="heightCm"
-            label="Height"
-            placeholder="e.g., 175"
-            keyboardType="numeric"
-            Icon={Ruler}
-            unit="cm"
-          />
-        )}
-        <FormTextInput
-          name="age"
-          label="Age"
-          placeholder="e.g., 30"
-          keyboardType="numeric"
-          Icon={Calendar}
+        <EnumChips
+          value={form.values.equation}
+          onChange={(v) => form.setFieldValue("equation", v)}
+          options={eqOptions}
         />
-        {needsBF && (
+
+        <FormikProvider value={form}>
           <FormTextInput
-            name="bodyFatPercent"
-            label="Body Fat %"
-            placeholder="e.g., 15"
+            ref={weightRef}
+            name="weightKg"
+            label="Weight"
+            placeholder="e.g., 88"
             keyboardType="numeric"
-            Icon={Percent}
-            unit="%"
+            Icon={Scale}
+            unit="kg"
+            returnKeyType="next"
+            blurOnSubmit={false}
+            onSubmitEditing={() => heightRef.current?.focus()}
           />
-        )}
-
-        {!submitted && (
-          <Pressable onPress={form.handleSubmit as any}>
-            <SubmitBar loading={isPending} label="Calculate BMR" />
-          </Pressable>
-        )}
-
-        {submitted && data && (
-          <View style={{ gap: 8 }}>
-            <ResultCard
-              title="BMR Result"
-              rows={[
-                { label: "BMR", value: `${Math.round(data.bmr)} kcal/day` },
-                { label: "Equation", value: data.equation.toUpperCase() },
-              ]}
+          {needsHeight && (
+            <FormTextInput
+              ref={heightRef}
+              name="heightCm"
+              label="Height"
+              placeholder="e.g., 175"
+              keyboardType="numeric"
+              Icon={Ruler}
+              unit="cm"
+              returnKeyType="next"
+              blurOnSubmit={false}
+              onSubmitEditing={() => ageRef.current?.focus()}
             />
-            <Pressable onPress={onDone} style={styles.closeBtn}>
-              <Text style={{ color: "#fff", fontWeight: "700" }}>Close</Text>
-            </Pressable>
-          </View>
-        )}
-      </FormikProvider>
+          )}
+          <FormTextInput
+            ref={ageRef}
+            name="age"
+            label="Age"
+            placeholder="e.g., 30"
+            keyboardType="numeric"
+            Icon={Calendar}
+            returnKeyType={needsBF ? "next" : "done"}
+            onSubmitEditing={() => bfRef.current?.focus()}
+          />
+          {needsBF && (
+            <FormTextInput
+              ref={bfRef}
+              name="bodyFatPercent"
+              label="Body Fat %"
+              placeholder="e.g., 15"
+              keyboardType="numeric"
+              Icon={Percent}
+              unit="%"
+              returnKeyType="done"
+              onSubmitEditing={form.handleSubmit as any}
+            />
+          )}
 
-      <Text style={{ fontSize: 12, color: icon }}>
-        Tip: Use Katch if you know body fat %; otherwise Mifflin is a solid
-        default.
-      </Text>
-    </View>
+          {!submitted && (
+            <Pressable onPress={form.handleSubmit as any}>
+              <SubmitBar loading={isPending} label="Calculate BMR" />
+            </Pressable>
+          )}
+
+          {submitted && data && (
+            <View style={{ gap: 8 }}>
+              <ResultCard
+                title="BMR Result"
+                rows={[
+                  { label: "BMR", value: `${Math.round(data.bmr)} kcal/day` },
+                  { label: "Equation", value: data.equation.toUpperCase() },
+                ]}
+              />
+              <Pressable onPress={onDone} style={styles.closeBtn}>
+                <ThemedText style={{ color: "#fff", fontWeight: "700" }}>
+                  Close
+                </ThemedText>
+              </Pressable>
+            </View>
+          )}
+        </FormikProvider>
+
+        <Text style={{ fontSize: 12, color: icon }}>
+          Tip: Use Katch if you know body fat %; otherwise Mifflin is a solid
+          default.
+        </Text>
+      </ThemedView>
+    </KeyboardAwareScrollView>
   );
 };
 
 export default BmrForm;
 
 const styles = StyleSheet.create({
-  title: { fontSize: 18, fontWeight: "700" },
+  title: {
+    fontSize: 20,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 18,
+  },
   closeBtn: {
     backgroundColor: "#10B981",
     padding: 12,

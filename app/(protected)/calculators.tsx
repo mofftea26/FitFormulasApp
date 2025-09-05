@@ -17,22 +17,23 @@ import BmrForm from "@/features/calculators/forms/BmrForm";
 import BodyCompForm from "@/features/calculators/forms/BodyCompForm";
 import MacrosForm from "@/features/calculators/forms/MacrosForm";
 import TdeeForm from "@/features/calculators/forms/TdeeForm";
-import { Colors } from "@/theme/constants/Colors";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
-type CalcKey = "BMR" | "TDEE" | "Macros" | "Body Composition" | "BMI";
+type CalcKey = "BMR" | "TDEE" | "Macros" | "BodyComposition" | "BMI";
 
 const FormByKey: Record<CalcKey, React.FC<{ onDone: () => void }>> = {
   BMR: BmrForm,
   TDEE: TdeeForm,
   Macros: MacrosForm,
-  "Body Composition": BodyCompForm,
+  BodyComposition: BodyCompForm,
   BMI: BmiForm,
 };
 
 export default function CalculatorsScreen() {
   const sheetRef = useRef<BottomSheet>(null);
   const [active, setActive] = useState<CalcKey | null>(null);
-
+  const bgColor = useThemeColor({}, "background");
+  const tintColor = useThemeColor({}, "tint");
   const snapPoints = useMemo(() => ["50%", "90%"], []);
 
   const open = useCallback((k: CalcKey) => {
@@ -61,39 +62,32 @@ export default function CalculatorsScreen() {
 
   const ActiveForm = active ? FormByKey[active] : null;
 
+  const items: { key: CalcKey; title: string }[] = [
+    { key: "BMR", title: "BMR" },
+    { key: "TDEE", title: "TDEE" },
+    { key: "Macros", title: "Macros" },
+    { key: "BodyComposition", title: "Body Composition" },
+    { key: "BMI", title: "BMI" },
+  ];
+
   return (
     <ThemedView style={styles.container}>
       <View style={styles.grid}>
-        <CalculatorsButton
-          title="BMR"
-          Icon={CARD_ICONS.BMR}
-          color={CARD_COLORS.BMR}
-          action={() => open("BMR")}
-        />
-        <CalculatorsButton
-          title="TDEE"
-          Icon={CARD_ICONS.TDEE}
-          color={CARD_COLORS.TDEE}
-          action={() => open("TDEE")}
-        />
-        <CalculatorsButton
-          title="Macros"
-          Icon={CARD_ICONS.Macros}
-          color={CARD_COLORS.Macros}
-          action={() => open("Macros")}
-        />
-        <CalculatorsButton
-          title="Body Composition"
-          Icon={CARD_ICONS.BodyComposition}
-          color={CARD_COLORS.BodyComposition}
-          action={() => open("Body Composition")}
-        />
-        <CalculatorsButton
-          title="BMI"
-          Icon={CARD_ICONS.BMI}
-          color={CARD_COLORS.BMI}
-          action={() => open("BMI")}
-        />
+        {items.map((item, idx) => {
+          const isLastOdd = items.length % 2 === 1 && idx === items.length - 1;
+          const Icon = CARD_ICONS[item.key];
+          const color = CARD_COLORS[item.key];
+          return (
+            <CalculatorsButton
+              key={item.key}
+              title={item.title}
+              Icon={Icon}
+              color={color}
+              action={() => open(item.key)}
+              style={[styles.cell, isLastOdd && styles.cellFull]}
+            />
+          );
+        })}
       </View>
 
       <BottomSheet
@@ -106,11 +100,11 @@ export default function CalculatorsScreen() {
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustPan"
         backgroundStyle={{
-          backgroundColor: Colors.light.icon,
+          backgroundColor: bgColor,
           borderTopLeftRadius: 16,
           borderTopRightRadius: 16,
         }}
-        handleIndicatorStyle={styles.handle}
+        handleIndicatorStyle={{ ...styles.handle, backgroundColor: tintColor }}
         onChange={(i) => {
           if (i === -1) setTimeout(() => setActive(null), 100);
         }}
@@ -128,13 +122,20 @@ const styles = StyleSheet.create({
   grid: {
     flex: 1,
     padding: 16,
-    gap: 16,
-    justifyContent: "center",
-    alignItems: "center",
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: "space-between",
+    gap: 14,
   },
-  sheetBg: { borderTopLeftRadius: 16, borderTopRightRadius: 16 },
-  handle: { width: 36, height: 4, borderRadius: 2, opacity: 0.4 },
+  cell: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    maxWidth: "100%",
+    marginBottom: 16,
+  },
+  cellFull: {
+    flexBasis: "100%",
+  },
+  handle: { width: 36, height: 4, borderRadius: 2 },
   sheetContent: { padding: 16 },
 });
