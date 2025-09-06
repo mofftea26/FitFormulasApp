@@ -3,13 +3,7 @@ import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
-import React, {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { ThemedView } from "@/components/ui/ThemedView";
@@ -53,7 +47,6 @@ export default function CalculatorsScreen() {
   const [active, setActive] = useState<CalcKey | null>(null);
   const bgColor = useThemeColor({}, "background");
   const tintColor = useThemeColor({}, "tint");
-  const snapPoints = useMemo(() => ["55%", "90%"], []);
 
   const router = useRouter();
   const params = useLocalSearchParams<{ open?: string | string[] }>();
@@ -136,7 +129,7 @@ export default function CalculatorsScreen() {
       <BottomSheet
         ref={sheetRef}
         index={-1}
-        snapPoints={snapPoints}
+        enableDynamicSizing
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         keyboardBehavior="extend"
