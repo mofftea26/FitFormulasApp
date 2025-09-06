@@ -14,17 +14,19 @@ type Props = {
   loading?: boolean;
   label?: string;
   onPress?: () => void; // ⬅️ add this
+  bgColor?: string;
 };
 
 export const SubmitBar: React.FC<Props> = ({
   disabled,
   loading,
   label = "Calculate",
-  onPress, // ⬅️ receive it
+  onPress,
+  bgColor,
 }) => {
   const scheme = useColorScheme() ?? "light";
   const tint = Colors[scheme].tint;
-  const bg = tint;
+  const bg = bgColor ?? tint;
   const fg = "#fff";
   const isDisabled = !!(disabled || loading);
 
@@ -32,7 +34,7 @@ export const SubmitBar: React.FC<Props> = ({
     <View style={styles.wrap}>
       <Pressable
         disabled={isDisabled}
-        onPress={onPress} // ⬅️ use it
+        onPress={onPress}
         hitSlop={10}
         style={({ pressed }) => [
           styles.btn,

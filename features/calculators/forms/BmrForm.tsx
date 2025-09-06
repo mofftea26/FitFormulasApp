@@ -24,7 +24,6 @@ import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { CARD_COLORS } from "@/constants/calculators/cardColors";
 import { useAuth } from "@/contexts/AuthContext";
-import { useThemeColor } from "@/hooks/useThemeColor";
 import { Colors } from "@/theme/constants/Colors";
 import { useZodFormik } from "../hooks/uzeZodFormik";
 
@@ -76,9 +75,6 @@ const BmrForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   const { session } = useAuth();
   const userId = session?.user.id;
   const scheme = useColorScheme() ?? "light";
-  const icon = Colors[scheme].icon;
-  const tintColor = useThemeColor({}, "tint");
-
   const { mutateAsync, isPending, data } = useCalcBmr();
   const [submitted, setSubmitted] = useState(false);
 
@@ -140,7 +136,7 @@ const BmrForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
       contentContainerStyle={{ flexGrow: 1, padding: 1 }}
     >
       <ThemedView style={{ gap: 12, flex: 1 }}>
-        <ThemedText style={{ ...styles.title, color: tintColor }}>
+        <ThemedText style={{ ...styles.title, color: CARD_COLORS.BMR }}>
           BMR Calculator
         </ThemedText>
 
@@ -149,6 +145,7 @@ const BmrForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
             value={form.values.gender}
             onChange={(v) => form.setFieldValue("gender", v)}
             options={genderOptions}
+            color={CARD_COLORS.BMR}
           />
         )}
 
@@ -237,6 +234,7 @@ const BmrForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
                 Keyboard.dismiss();
                 form.submitForm();
               }}
+              bgColor={CARD_COLORS.BMR}
             />
           )}
 
@@ -250,6 +248,7 @@ const BmrForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
                   Keyboard.dismiss();
                   form.submitForm();
                 }}
+                bgColor={CARD_COLORS.BMR}
               />
 
               <View style={{ gap: 8 }}>
@@ -271,7 +270,7 @@ const BmrForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
           )}
         </FormikProvider>
 
-        <Text style={{ fontSize: 12, color: icon }}>
+        <Text style={{ fontSize: 12, color: Colors[scheme].icon }}>
           Tip: Use Katch if you know body fat %; otherwise Mifflin is a solid
           default.
         </Text>

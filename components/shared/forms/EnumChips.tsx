@@ -24,12 +24,14 @@ type Props<T extends string> = {
   value: T;
   onChange: (v: T) => void;
   options: ChipOption<T>[];
+  color?: string;
 };
 
 export function EnumChips<T extends string>({
   value,
   onChange,
   options,
+  color,
 }: Props<T>) {
   const scheme = useColorScheme() ?? "light";
   const tint = Colors[scheme].tint;
@@ -55,20 +57,20 @@ export function EnumChips<T extends string>({
             style={[
               styles.chip,
               selected ? selectedScale : defaultScale,
-              { borderColor: selected ? tint : icon },
+              { borderColor: selected ? color ?? tint : icon },
             ]}
           >
             <Pressable style={styles.press} onPress={() => onChange(opt.value)}>
               {opt.Icon ? (
                 <opt.Icon
                   size={16}
-                  color={selected ? tint : icon}
+                  color={selected ? color ?? tint : icon}
                   style={{ marginRight: 6 }}
                 />
               ) : null}
               <Text
                 style={{
-                  color: selected ? tint : text,
+                  color: selected ? color ?? tint : text,
                   fontWeight: selected ? "700" : "500",
                 }}
               >

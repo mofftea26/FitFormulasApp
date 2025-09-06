@@ -16,7 +16,6 @@ import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { CARD_COLORS } from "@/constants/calculators/cardColors";
 import { useAuth } from "@/contexts/AuthContext";
-import { useThemeColor } from "@/hooks/useThemeColor";
 import { useZodFormik } from "../hooks/uzeZodFormik";
 
 const isNum = (s: string) => /^(\d+([.,]\d+)?)$/.test(s.trim());
@@ -122,7 +121,6 @@ const genders = [
 const BodyCompForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   const { session } = useAuth();
   const userId = session?.user.id;
-  const tintColor = useThemeColor({}, "tint");
   const { mutateAsync, isPending, data } = useCalcBodyComp();
   const [submitted, setSubmitted] = useState(false);
 
@@ -180,7 +178,9 @@ const BodyCompForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
       contentContainerStyle={{ flexGrow: 1, padding: 1.5 }}
     >
       <ThemedView style={{ gap: 12, flex: 1 }}>
-        <ThemedText style={{ ...styles.title, color: tintColor }}>
+        <ThemedText
+          style={{ ...styles.title, color: CARD_COLORS.BodyComposition }}
+        >
           Body Composition
         </ThemedText>
 
@@ -194,6 +194,7 @@ const BodyCompForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
             { value: "bfInput", label: "I know my BF%" },
             { value: "usNavy", label: "Estimate (US Navy)" },
           ]}
+          color={CARD_COLORS.BodyComposition}
         />
 
         {isUSNavy && (
@@ -204,6 +205,7 @@ const BodyCompForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
               form.setErrors({});
             }}
             options={genders}
+            color={CARD_COLORS.BodyComposition}
           />
         )}
 
@@ -302,6 +304,7 @@ const BodyCompForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
                 form.submitForm();
               }}
               disabled={isPending}
+              bgColor={CARD_COLORS.BodyComposition}
             />
           )}
 
@@ -315,6 +318,7 @@ const BodyCompForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
                   form.submitForm();
                 }}
                 disabled={isPending}
+                bgColor={CARD_COLORS.BodyComposition}
               />
               <View style={{ gap: 8 }}>
                 <ResultCard

@@ -13,7 +13,6 @@ import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { CARD_COLORS } from "@/constants/calculators/cardColors";
 import { useAuth } from "@/contexts/AuthContext";
-import { useThemeColor } from "@/hooks/useThemeColor";
 import { useZodFormik } from "../hooks/uzeZodFormik";
 
 const schema = z.object({
@@ -27,7 +26,6 @@ const BmiForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   const userId = session?.user.id;
   const { mutateAsync, isPending, data } = useCalcBmi();
   const [submitted, setSubmitted] = useState(false);
-  const tintColor = useThemeColor({}, "tint");
   const weightRef = useRef<TextInput>(null);
   const heightRef = useRef<TextInput>(null);
   const form = useZodFormik(schema, {
@@ -49,13 +47,13 @@ const BmiForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   return (
     <KeyboardAwareScrollView
       enableOnAndroid
-      extraScrollHeight={20} // nudge focused input above keyboard
+      extraScrollHeight={20}
       keyboardOpeningTime={0}
       keyboardShouldPersistTaps="always"
       contentContainerStyle={{ flexGrow: 1 }}
     >
       <ThemedView style={{ gap: 12, flex: 1 }}>
-        <ThemedText style={{ ...styles.title, color: tintColor }}>
+        <ThemedText style={{ ...styles.title, color: CARD_COLORS.BMI }}>
           BMI Calculator
         </ThemedText>
 
@@ -92,6 +90,7 @@ const BmiForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
                 form.submitForm();
               }}
               disabled={isPending}
+              bgColor={CARD_COLORS.BMI}
             />
           )}
 

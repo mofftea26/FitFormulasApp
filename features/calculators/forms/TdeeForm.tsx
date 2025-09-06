@@ -15,7 +15,6 @@ import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { CARD_COLORS } from "@/constants/calculators/cardColors";
 import { useAuth } from "@/contexts/AuthContext";
-import { useThemeColor } from "@/hooks/useThemeColor";
 import { useZodFormik } from "../hooks/uzeZodFormik";
 
 const schema = z.object({
@@ -43,7 +42,6 @@ const TdeeForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   const userId = session?.user.id;
   const { mutateAsync, isPending, data } = useCalcTdee();
   const [submitted, setSubmitted] = useState(false);
-  const tintColor = useThemeColor({}, "tint");
   const bmrRef = useRef<TextInput>(null);
   const form = useZodFormik(schema, {
     initialValues: { bmr: "", activityLevel: "moderate" } as unknown as Values,
@@ -70,7 +68,7 @@ const TdeeForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
       contentContainerStyle={{ flexGrow: 1, padding: 1.5 }}
     >
       <ThemedView style={{ gap: 12, flex: 1 }}>
-        <ThemedText style={{ ...styles.title, color: tintColor }}>
+        <ThemedText style={{ ...styles.title, color: CARD_COLORS.TDEE }}>
           TDEE Calculator
         </ThemedText>
 
@@ -78,6 +76,7 @@ const TdeeForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
           value={form.values.activityLevel}
           onChange={(v) => form.setFieldValue("activityLevel", v)}
           options={levels}
+          color={CARD_COLORS.TDEE}
         />
 
         <FormikProvider value={form}>
@@ -101,13 +100,21 @@ const TdeeForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
                 form.submitForm();
               }}
               disabled={isPending}
+              bgColor={CARD_COLORS.TDEE}
             />
           )}
 
           {submitted && data && (
-            <Pressable onPress={() => form.submitForm()}>
-              <SubmitBar loading={isPending} label="Calculate TDEE" />
-            </Pressable>
+            <SubmitBar
+              loading={isPending}
+              label="Recalculate"
+              onPress={() => {
+                Keyboard.dismiss();
+                form.submitForm();
+              }}
+              disabled={isPending}
+              bgColor={CARD_COLORS.TDEE}
+            />
           )}
 
           {submitted && data && (
