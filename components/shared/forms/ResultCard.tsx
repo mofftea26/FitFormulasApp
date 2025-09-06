@@ -1,32 +1,32 @@
 import React from "react";
-import { StyleSheet, Text, useColorScheme, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
-import { Colors } from "@/theme/constants/Colors";
 import { CheckCircle2 } from "lucide-react-native";
 
-const Row: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+const Row: React.FC<{ label: string; value: string; color?: string }> = ({
+  label,
+  value,
+  color,
+}) => (
   <View style={styles.row}>
-    <Text style={styles.kvLabel}>{label}</Text>
-    <Text style={styles.kvValue}>{value}</Text>
+    <Text style={[styles.kvLabel, { color: color }]}>{label}</Text>
+    <Text style={[styles.kvValue, { color: color }]}>{value}</Text>
   </View>
 );
 
 export const ResultCard: React.FC<{
   title: string;
   rows: { label: string; value: string }[];
-}> = ({ title, rows }) => {
-  const scheme = useColorScheme() ?? "light";
-  const text = Colors[scheme].text;
-  const icon = Colors[scheme].icon;
-
+  color?: string;
+}> = ({ title, rows, color }) => {
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { borderColor: color }]}>
       <View style={styles.titleRow}>
-        <CheckCircle2 size={18} color={icon} />
-        <Text style={[styles.title, { color: text }]}>{title}</Text>
+        <CheckCircle2 size={18} color={color} />
+        <Text style={[styles.title, { color: color }]}>{title}</Text>
       </View>
       {rows.map((r) => (
-        <Row key={r.label} {...r} />
+        <Row key={r.label} {...r} color={color} />
       ))}
     </View>
   );

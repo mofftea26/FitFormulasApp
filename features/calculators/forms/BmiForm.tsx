@@ -1,7 +1,7 @@
 import { FormikProvider } from "formik";
 import { Ruler, Scale } from "lucide-react-native";
 import React, { useRef, useState } from "react";
-import { Pressable, StyleSheet, TextInput } from "react-native";
+import { Keyboard, Pressable, StyleSheet, TextInput } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { z } from "zod";
 
@@ -11,6 +11,7 @@ import { ResultCard } from "@/components/shared/forms/ResultCard";
 import { SubmitBar } from "@/components/shared/forms/SubmitBar";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
+import { CARD_COLORS } from "@/constants/calculators/cardColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useZodFormik } from "../hooks/uzeZodFormik";
@@ -32,12 +33,16 @@ const BmiForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   const form = useZodFormik(schema, {
     initialValues: { weightKg: "", heightCm: "" } as unknown as Values,
     onSubmit: async (v) => {
-      await mutateAsync({
-        userId: userId ?? "anonymous",
-        weightKg: Number(v.weightKg),
-        heightCm: Number(v.heightCm),
-      });
-      setSubmitted(true);
+      try {
+        await mutateAsync({
+          userId: userId ?? "anonymous",
+          weightKg: Number(v.weightKg),
+          heightCm: Number(v.heightCm),
+        });
+        setSubmitted(true);
+      } catch (e) {
+        console.error(e);
+      }
     },
   });
 
@@ -46,7 +51,7 @@ const BmiForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
       enableOnAndroid
       extraScrollHeight={20} // nudge focused input above keyboard
       keyboardOpeningTime={0}
-      keyboardShouldPersistTaps="handled"
+      keyboardShouldPersistTaps="always"
       contentContainerStyle={{ flexGrow: 1 }}
     >
       <ThemedView style={{ gap: 12, flex: 1 }}>
@@ -76,18 +81,24 @@ const BmiForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
             Icon={Ruler}
             unit="cm"
             returnKeyType={submitted ? "done" : "go"}
-            onSubmitEditing={form.handleSubmit as any}
+            onSubmitEditing={() => form.submitForm()}
           />
-
           {!submitted && (
-            <Pressable onPress={form.handleSubmit as any}>
-              <SubmitBar loading={isPending} label="Calculate BMI" />
-            </Pressable>
+            <SubmitBar
+              loading={isPending}
+              label="Calculate BMI"
+              onPress={() => {
+                Keyboard.dismiss();
+                form.submitForm();
+              }}
+              disabled={isPending}
+            />
           )}
 
           {submitted && data && (
             <ThemedView style={{ gap: 8 }}>
               <ResultCard
+                color={CARD_COLORS.BMI}
                 title="BMI Result"
                 rows={[
                   { label: "BMI", value: data.bmi.toFixed(1) },

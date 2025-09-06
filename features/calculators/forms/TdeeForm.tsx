@@ -1,7 +1,7 @@
 import { FormikProvider } from "formik";
 import { Gauge } from "lucide-react-native";
 import React, { useRef, useState } from "react";
-import { Pressable, StyleSheet, TextInput, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { z } from "zod";
 
@@ -13,6 +13,7 @@ import { ResultCard } from "@/components/shared/forms/ResultCard";
 import { SubmitBar } from "@/components/shared/forms/SubmitBar";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
+import { CARD_COLORS } from "@/constants/calculators/cardColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useZodFormik } from "../hooks/uzeZodFormik";
@@ -47,12 +48,16 @@ const TdeeForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   const form = useZodFormik(schema, {
     initialValues: { bmr: "", activityLevel: "moderate" } as unknown as Values,
     onSubmit: async (v) => {
-      await mutateAsync({
-        userId: userId ?? "anonymous",
-        bmr: Number(v.bmr),
-        activityLevel: v.activityLevel,
-      });
-      setSubmitted(true);
+      try {
+        await mutateAsync({
+          userId: userId ?? "anonymous",
+          bmr: Number(v.bmr),
+          activityLevel: v.activityLevel,
+        });
+        setSubmitted(true);
+      } catch (e) {
+        console.error(e);
+      }
     },
   });
 
@@ -84,11 +89,23 @@ const TdeeForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
             keyboardType="numeric"
             Icon={Gauge}
             returnKeyType="done"
-            onSubmitEditing={form.handleSubmit as any}
+            onSubmitEditing={() => form.submitForm()}
           />
 
           {!submitted && (
-            <Pressable onPress={form.handleSubmit as any}>
+            <SubmitBar
+              loading={isPending}
+              label="Calculate TDEE"
+              onPress={() => {
+                Keyboard.dismiss();
+                form.submitForm();
+              }}
+              disabled={isPending}
+            />
+          )}
+
+          {submitted && data && (
+            <Pressable onPress={() => form.submitForm()}>
               <SubmitBar loading={isPending} label="Calculate TDEE" />
             </Pressable>
           )}
@@ -96,6 +113,7 @@ const TdeeForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
           {submitted && data && (
             <View style={{ gap: 8 }}>
               <ResultCard
+                color={CARD_COLORS.TDEE}
                 title="TDEE Result"
                 rows={[
                   { label: "TDEE", value: `${Math.round(data.tdee)} kcal/day` },

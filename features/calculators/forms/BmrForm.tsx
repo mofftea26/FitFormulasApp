@@ -1,7 +1,9 @@
+// BmrForm.tsx
 import { FormikProvider } from "formik";
 import { Calendar, Percent, Ruler, Scale, User2 } from "lucide-react-native";
 import React, { useMemo, useRef, useState } from "react";
 import {
+  Keyboard,
   Pressable,
   StyleSheet,
   Text,
@@ -20,20 +22,44 @@ import { ResultCard } from "@/components/shared/forms/ResultCard";
 import { SubmitBar } from "@/components/shared/forms/SubmitBar";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
+import { CARD_COLORS } from "@/constants/calculators/cardColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { Colors } from "@/theme/constants/Colors";
 import { useZodFormik } from "../hooks/uzeZodFormik";
 
-const schema = z.object({
+const mifflinSchema = z.object({
+  equation: z.literal("mifflin"),
   weightKg: z.coerce.number().positive("Weight must be > 0"),
-  heightCm: z.coerce.number().positive("Height must be > 0").optional(),
+  heightCm: z.coerce.number().positive("Height must be > 0"),
   age: z.coerce.number().int().min(10).max(100),
   gender: z.enum(["male", "female"]),
-  bodyFatPercent: z.coerce.number().min(3).max(70).optional(),
-  equation: z.enum(["mifflin", "harris", "katch"]),
+  bodyFatPercent: z.any().optional(),
 });
 
+const harrisSchema = z.object({
+  equation: z.literal("harris"),
+  weightKg: z.coerce.number().positive("Weight must be > 0"),
+  heightCm: z.coerce.number().positive("Height must be > 0"),
+  age: z.coerce.number().int().min(10).max(100),
+  gender: z.enum(["male", "female"]),
+  bodyFatPercent: z.any().optional(),
+});
+
+const katchSchema = z.object({
+  equation: z.literal("katch"),
+  weightKg: z.coerce.number().positive("Weight must be > 0"),
+  bodyFatPercent: z.coerce.number().min(3).max(70, "Unrealistic BF%"),
+  heightCm: z.any().optional(),
+  age: z.any().optional(),
+  gender: z.any().optional(),
+});
+
+const schema = z.discriminatedUnion("equation", [
+  mifflinSchema,
+  harrisSchema,
+  katchSchema,
+]);
 type Values = z.infer<typeof schema>;
 
 const genderOptions = [
@@ -52,12 +78,15 @@ const BmrForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   const scheme = useColorScheme() ?? "light";
   const icon = Colors[scheme].icon;
   const tintColor = useThemeColor({}, "tint");
+
   const { mutateAsync, isPending, data } = useCalcBmr();
   const [submitted, setSubmitted] = useState(false);
+
   const weightRef = useRef<TextInput>(null);
   const heightRef = useRef<TextInput>(null);
   const ageRef = useRef<TextInput>(null);
   const bfRef = useRef<TextInput>(null);
+
   const form = useZodFormik(schema, {
     initialValues: {
       weightKg: "",
@@ -68,32 +97,30 @@ const BmrForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
       equation: "mifflin",
     } as unknown as Values,
     onSubmit: async (vals) => {
-      if (
-        (vals.equation === "mifflin" || vals.equation === "harris") &&
-        !vals.heightCm
-      ) {
-        form.setFieldError("heightCm", "Height is required for Mifflin/Harris");
-        return;
+      try {
+        if (vals.equation === "katch") {
+          await mutateAsync({
+            userId: userId ?? "anonymous",
+            weightKg: Number(vals.weightKg),
+            bodyFatPercent: Number((vals as any).bodyFatPercent),
+            equation: "katch",
+            age: 0,
+            gender: "male",
+          });
+        } else {
+          await mutateAsync({
+            userId: userId ?? "anonymous",
+            weightKg: Number(vals.weightKg),
+            heightCm: Number((vals as any).heightCm),
+            age: Number((vals as any).age),
+            gender: (vals as any).gender,
+            equation: vals.equation,
+          });
+        }
+        setSubmitted(true);
+      } catch (e) {
+        console.error(e);
       }
-      if (vals.equation === "katch" && !vals.bodyFatPercent) {
-        form.setFieldError(
-          "bodyFatPercent",
-          "Body fat % is required for Katch"
-        );
-        return;
-      }
-      await mutateAsync({
-        userId: userId ?? "anonymous",
-        weightKg: Number(vals.weightKg),
-        heightCm: vals.heightCm ? Number(vals.heightCm) : undefined,
-        age: Number(vals.age),
-        gender: vals.gender,
-        bodyFatPercent: vals.bodyFatPercent
-          ? Number(vals.bodyFatPercent)
-          : undefined,
-        equation: vals.equation,
-      });
-      setSubmitted(true);
     },
   });
 
@@ -107,7 +134,7 @@ const BmrForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   return (
     <KeyboardAwareScrollView
       enableOnAndroid
-      keyboardShouldPersistTaps="handled"
+      keyboardShouldPersistTaps="always"
       extraScrollHeight={24}
       keyboardOpeningTime={0}
       contentContainerStyle={{ flexGrow: 1, padding: 1 }}
@@ -117,14 +144,20 @@ const BmrForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
           BMR Calculator
         </ThemedText>
 
-        <EnumChips
-          value={form.values.gender}
-          onChange={(v) => form.setFieldValue("gender", v)}
-          options={genderOptions}
-        />
+        {!needsBF && (
+          <EnumChips
+            value={form.values.gender}
+            onChange={(v) => form.setFieldValue("gender", v)}
+            options={genderOptions}
+          />
+        )}
+
         <EnumChips
           value={form.values.equation}
-          onChange={(v) => form.setFieldValue("equation", v)}
+          onChange={(v) => {
+            form.setFieldValue("equation", v);
+            form.setErrors({});
+          }}
           options={eqOptions}
         />
 
@@ -139,8 +172,17 @@ const BmrForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
             unit="kg"
             returnKeyType="next"
             blurOnSubmit={false}
-            onSubmitEditing={() => heightRef.current?.focus()}
+            onSubmitEditing={() => {
+              if (needsHeight) {
+                heightRef.current?.focus();
+              } else if (!needsBF) {
+                ageRef.current?.focus();
+              } else {
+                bfRef.current?.focus();
+              }
+            }}
           />
+
           {needsHeight && (
             <FormTextInput
               ref={heightRef}
@@ -152,19 +194,26 @@ const BmrForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
               unit="cm"
               returnKeyType="next"
               blurOnSubmit={false}
-              onSubmitEditing={() => ageRef.current?.focus()}
+              onSubmitEditing={() => {
+                ageRef.current?.focus();
+              }}
             />
           )}
-          <FormTextInput
-            ref={ageRef}
-            name="age"
-            label="Age"
-            placeholder="e.g., 30"
-            keyboardType="numeric"
-            Icon={Calendar}
-            returnKeyType={needsBF ? "next" : "done"}
-            onSubmitEditing={() => bfRef.current?.focus()}
-          />
+
+          {!needsBF && (
+            <FormTextInput
+              ref={ageRef}
+              name="age"
+              label="Age"
+              placeholder="e.g., 30"
+              keyboardType="numeric"
+              Icon={Calendar}
+              returnKeyType="done"
+              blurOnSubmit
+              onSubmitEditing={() => form.submitForm()}
+            />
+          )}
+
           {needsBF && (
             <FormTextInput
               ref={bfRef}
@@ -175,31 +224,50 @@ const BmrForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
               Icon={Percent}
               unit="%"
               returnKeyType="done"
-              onSubmitEditing={form.handleSubmit as any}
+              onSubmitEditing={() => form.submitForm()}
             />
           )}
 
           {!submitted && (
-            <Pressable onPress={form.handleSubmit as any}>
-              <SubmitBar loading={isPending} label="Calculate BMR" />
-            </Pressable>
+            <SubmitBar
+              loading={isPending}
+              label="Calculate BMR"
+              disabled={isPending}
+              onPress={() => {
+                Keyboard.dismiss();
+                form.submitForm();
+              }}
+            />
           )}
 
           {submitted && data && (
-            <View style={{ gap: 8 }}>
-              <ResultCard
-                title="BMR Result"
-                rows={[
-                  { label: "BMR", value: `${Math.round(data.bmr)} kcal/day` },
-                  { label: "Equation", value: data.equation.toUpperCase() },
-                ]}
+            <>
+              <SubmitBar
+                loading={isPending}
+                label="Recalculate"
+                disabled={isPending}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  form.submitForm();
+                }}
               />
-              <Pressable onPress={onDone} style={styles.closeBtn}>
-                <ThemedText style={{ color: "#fff", fontWeight: "700" }}>
-                  Close
-                </ThemedText>
-              </Pressable>
-            </View>
+
+              <View style={{ gap: 8 }}>
+                <ResultCard
+                  color={CARD_COLORS.BMR}
+                  title="BMR Result"
+                  rows={[
+                    { label: "BMR", value: `${Math.round(data.bmr)} kcal/day` },
+                    { label: "Equation", value: data.equation.toUpperCase() },
+                  ]}
+                />
+                <Pressable onPress={onDone} style={styles.closeBtn}>
+                  <ThemedText style={{ color: "#fff", fontWeight: "700" }}>
+                    Close
+                  </ThemedText>
+                </Pressable>
+              </View>
+            </>
           )}
         </FormikProvider>
 

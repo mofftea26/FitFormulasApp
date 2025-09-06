@@ -1,6 +1,7 @@
+// MacrosForm.tsx
 import { FormikProvider } from "formik";
 import React, { useRef, useState } from "react";
-import { Pressable, StyleSheet, TextInput, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { z } from "zod";
 
@@ -12,27 +13,68 @@ import { ResultCard } from "@/components/shared/forms/ResultCard";
 import { SubmitBar } from "@/components/shared/forms/SubmitBar";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
+import { CARD_COLORS } from "@/constants/calculators/cardColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useZodFormik } from "../hooks/uzeZodFormik";
 
+/* ---------- helpers ---------- */
+const isNum = (s: string) => /^(\d+([.,]\d+)?)$/.test(s.trim());
+const toNum = (s?: string) =>
+  s && s.trim() !== "" ? Number(s.replace(",", ".")) : undefined;
+
+/* ---------- schema: keep strings; validate per method ---------- */
 const schema = z
   .object({
-    weightKg: z.coerce.number().positive(),
+    weightKg: z
+      .string()
+      .min(1, "Required")
+      .refine(isNum, "Enter a valid number > 0")
+      .refine((s) => Number(s.replace(",", ".")) > 0, "Must be > 0"),
+
     goal: z.enum(["fatLoss", "maintenance", "muscleGain"]),
-    method: z.enum(["tdee", "bmr+activity"]), // UI-only
-    tdee: z.coerce.number().positive().optional(),
-    bmr: z.coerce.number().positive().optional(),
+    method: z.enum(["tdee", "bmr+activity"]),
+
+    tdee: z
+      .string()
+      .optional()
+      .transform((v) => v ?? ""),
+    bmr: z
+      .string()
+      .optional()
+      .transform((v) => v ?? ""),
     activityLevel: z
       .enum(["sedentary", "light", "moderate", "active", "very_active"])
       .optional(),
   })
-  .refine(
-    (v) =>
-      (v.method === "tdee" && v.tdee) ||
-      (v.method === "bmr+activity" && v.bmr && v.activityLevel),
-    { message: "Provide TDEE, or BMR + Activity Level" }
-  );
+  .superRefine((v, ctx) => {
+    if (v.method === "tdee") {
+      if (!v.tdee || !isNum(v.tdee) || Number(v.tdee.replace(",", ".")) <= 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["tdee"],
+          message: "Enter a valid TDEE",
+        });
+      }
+      return;
+    }
+
+    // bmr+activity branch
+    if (!v.bmr || !isNum(v.bmr) || Number(v.bmr.replace(",", ".")) <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["bmr"],
+        message: "Enter a valid BMR",
+      });
+    }
+    if (!v.activityLevel) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["activityLevel"],
+        message: "Choose an activity level",
+      });
+    }
+  });
 
 type Values = z.infer<typeof schema>;
 
@@ -41,6 +83,7 @@ const goalOptions: { value: Goal; label: string }[] = [
   { value: "maintenance", label: "Maintain" },
   { value: "muscleGain", label: "Muscle Gain" },
 ];
+
 const levels: { value: ActivityLevel; label: string }[] = [
   { value: "sedentary", label: "Sedentary" },
   { value: "light", label: "Light" },
@@ -55,9 +98,12 @@ const MacrosForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   const { mutateAsync, isPending, data } = useCalcMacros();
   const [submitted, setSubmitted] = useState(false);
   const tintColor = useThemeColor({}, "tint");
+
+  // refs for focus chain
   const weightRef = useRef<TextInput>(null);
   const tdeeRef = useRef<TextInput>(null);
   const bmrRef = useRef<TextInput>(null);
+
   const form = useZodFormik(schema, {
     initialValues: {
       weightKg: "",
@@ -68,16 +114,20 @@ const MacrosForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
       activityLevel: "moderate",
     } as unknown as Values,
     onSubmit: async (v) => {
-      await mutateAsync({
-        userId: userId ?? "anonymous",
-        weightKg: Number(v.weightKg),
-        goal: v.goal,
-        tdee: v.method === "tdee" ? Number(v.tdee) : undefined,
-        bmr: v.method === "bmr+activity" ? Number(v.bmr) : undefined,
-        activityLevel:
-          v.method === "bmr+activity" ? v.activityLevel : undefined,
-      });
-      setSubmitted(true);
+      try {
+        await mutateAsync({
+          userId: userId ?? "anonymous",
+          weightKg: toNum(v.weightKg)!,
+          goal: v.goal,
+          tdee: v.method === "tdee" ? toNum(v.tdee) : undefined,
+          bmr: v.method === "bmr+activity" ? toNum(v.bmr) : undefined,
+          activityLevel:
+            v.method === "bmr+activity" ? v.activityLevel : undefined,
+        });
+        setSubmitted(true);
+      } catch (e) {
+        console.error(e);
+      }
     },
   });
 
@@ -86,7 +136,7 @@ const MacrosForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   return (
     <KeyboardAwareScrollView
       enableOnAndroid
-      keyboardShouldPersistTaps="handled"
+      keyboardShouldPersistTaps="always"
       extraScrollHeight={24}
       keyboardOpeningTime={0}
       contentContainerStyle={{ flexGrow: 1, padding: 1.5 }}
@@ -101,9 +151,13 @@ const MacrosForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
           onChange={(v) => form.setFieldValue("goal", v)}
           options={goalOptions}
         />
+
         <EnumChips
           value={method}
-          onChange={(v) => form.setFieldValue("method", v)}
+          onChange={(v) => {
+            form.setFieldValue("method", v);
+            form.setErrors({}); // clear irrelevant errors when switching method
+          }}
           options={[
             { value: "tdee", label: "Use TDEE" },
             { value: "bmr+activity", label: "BMR + Activity" },
@@ -111,6 +165,7 @@ const MacrosForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
         />
 
         <FormikProvider value={form}>
+          {/* Weight -> TDEE (or) Weight -> BMR */}
           <FormTextInput
             ref={weightRef}
             name="weightKg"
@@ -120,10 +175,14 @@ const MacrosForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
             unit="kg"
             returnKeyType="next"
             blurOnSubmit={false}
-            onSubmitEditing={() => tdeeRef.current?.focus()}
+            onSubmitEditing={() => {
+              if (method === "tdee") tdeeRef.current?.focus();
+              else bmrRef.current?.focus();
+            }}
           />
 
           {method === "tdee" ? (
+            // TDEE -> Submit
             <FormTextInput
               ref={tdeeRef}
               name="tdee"
@@ -131,19 +190,19 @@ const MacrosForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
               placeholder="e.g., 2600"
               keyboardType="numeric"
               returnKeyType="done"
-              onSubmitEditing={form.handleSubmit as any}
+              onSubmitEditing={() => form.submitForm()}
             />
           ) : (
             <>
+              {/* BMR -> Submit (chips are not inputs, so "done" here) */}
               <FormTextInput
                 ref={bmrRef}
                 name="bmr"
                 label="BMR"
                 placeholder="e.g., 1850"
                 keyboardType="numeric"
-                returnKeyType="next"
-                blurOnSubmit={false}
-                onSubmitEditing={form.handleSubmit as any}
+                returnKeyType="done"
+                onSubmitEditing={() => form.submitForm()}
               />
               <EnumChips
                 value={form.values.activityLevel!}
@@ -154,31 +213,53 @@ const MacrosForm: React.FC<{ onDone: () => void }> = ({ onDone }) => {
           )}
 
           {!submitted && (
-            <Pressable onPress={form.handleSubmit as any}>
-              <SubmitBar loading={isPending} label="Calculate Macros" />
-            </Pressable>
+            <SubmitBar
+              loading={isPending}
+              label="Calculate Macros"
+              onPress={() => {
+                Keyboard.dismiss();
+                form.submitForm();
+              }}
+              disabled={isPending}
+            />
           )}
 
           {submitted && data && (
-            <View style={{ gap: 8 }}>
-              <ResultCard
-                title="Macros Result"
-                rows={[
-                  {
-                    label: "Calories",
-                    value: `${Math.round(data.calories)} kcal`,
-                  },
-                  { label: "Protein", value: `${Math.round(data.protein)} g` },
-                  { label: "Carbs", value: `${Math.round(data.carbs)} g` },
-                  { label: "Fat", value: `${Math.round(data.fat)} g` },
-                ]}
+            <>
+              <SubmitBar
+                loading={isPending}
+                label="Recalculate"
+                onPress={() => {
+                  Keyboard.dismiss();
+                  form.submitForm();
+                }}
+                disabled={isPending}
               />
-              <Pressable onPress={onDone} style={styles.closeBtn}>
-                <ThemedText style={{ color: "#fff", fontWeight: "700" }}>
-                  Close
-                </ThemedText>
-              </Pressable>
-            </View>
+
+              <View style={{ gap: 8 }}>
+                <ResultCard
+                  color={CARD_COLORS.Macros}
+                  title="Macros Result"
+                  rows={[
+                    {
+                      label: "Calories",
+                      value: `${Math.round(data.calories)} kcal`,
+                    },
+                    {
+                      label: "Protein",
+                      value: `${Math.round(data.protein)} g`,
+                    },
+                    { label: "Carbs", value: `${Math.round(data.carbs)} g` },
+                    { label: "Fat", value: `${Math.round(data.fat)} g` },
+                  ]}
+                />
+                <Pressable onPress={onDone} style={styles.closeBtn}>
+                  <ThemedText style={{ color: "#fff", fontWeight: "700" }}>
+                    Close
+                  </ThemedText>
+                </Pressable>
+              </View>
+            </>
           )}
         </FormikProvider>
       </ThemedView>

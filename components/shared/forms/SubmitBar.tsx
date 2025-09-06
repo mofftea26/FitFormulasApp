@@ -1,3 +1,4 @@
+import { Colors } from "@/theme/constants/Colors";
 import React from "react";
 import {
   ActivityIndicator,
@@ -8,27 +9,41 @@ import {
   View,
 } from "react-native";
 
-import { Colors } from "@/theme/constants/Colors";
-
-export const SubmitBar: React.FC<{
+type Props = {
   disabled?: boolean;
   loading?: boolean;
   label?: string;
-}> = ({ disabled, loading, label = "Calculate" }) => {
+  onPress?: () => void; // ⬅️ add this
+};
+
+export const SubmitBar: React.FC<Props> = ({
+  disabled,
+  loading,
+  label = "Calculate",
+  onPress, // ⬅️ receive it
+}) => {
   const scheme = useColorScheme() ?? "light";
   const tint = Colors[scheme].tint;
   const bg = tint;
   const fg = "#fff";
+  const isDisabled = !!(disabled || loading);
 
   return (
     <View style={styles.wrap}>
       <Pressable
-        disabled={disabled || loading}
-        style={[
+        disabled={isDisabled}
+        onPress={onPress} // ⬅️ use it
+        hitSlop={10}
+        style={({ pressed }) => [
           styles.btn,
-          { backgroundColor: bg, opacity: disabled || loading ? 0.6 : 1 },
+          {
+            backgroundColor: bg,
+            opacity: isDisabled ? 0.6 : pressed ? 0.85 : 1,
+          },
         ]}
-        onPress={() => {}}
+        collapsable={false}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: isDisabled, busy: !!loading }}
       />
       <View pointerEvents="none" style={styles.btnOverlay}>
         {loading ? (
@@ -42,7 +57,7 @@ export const SubmitBar: React.FC<{
 };
 
 const styles = StyleSheet.create({
-  wrap: { marginTop: 8 },
+  wrap: { marginTop: 8, alignSelf: "stretch" },
   btn: { borderRadius: 12, height: 48 },
   btnOverlay: {
     position: "absolute",
